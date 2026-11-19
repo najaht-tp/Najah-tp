@@ -4,3 +4,4 @@ node_modules/
 reference/
 checkpoints/
 .claude/
+.secrets/

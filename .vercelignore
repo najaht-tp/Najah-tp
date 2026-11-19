@@ -1,0 +1,13 @@
+# Vercel publishes only the built page (index.html, which has everything embedded, with the protected case study encrypted).
+# The readable source and the original images stay off the live site.
+index.src.html
+src/
+assets/
+tools/
+preview/
+reference/
+checkpoints/
+.secrets/
+CLAUDE.md
+package.json
+package-lock.json

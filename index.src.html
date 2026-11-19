@@ -583,6 +583,28 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
 .sf-lb__body img { max-width: none; width: var(--lbw, 1600px); height: auto; border-radius: 12px; background: #fafafa; }
 .sf-phones--wf img { background: #0e1218; }
 
+/* ── protected case study: lock screen and the card badge ── */
+.card__lock { display: inline-flex; align-items: center; gap: 5px; margin-left: 10px; padding: 3px 9px; border-radius: 999px; vertical-align: middle;
+  font-size: 11px; font-weight: 600; letter-spacing: .3px; color: #ff8a98; background: rgba(195, 24, 38, .16); border: 1px solid rgba(255, 90, 110, .4); }
+.lock { display: grid; justify-items: center; text-align: center; max-width: 460px; margin: clamp(24px, 8vh, 90px) auto 0; padding: 0 4px; }
+.lock__logo { width: 96px; height: auto; border-radius: 22px; margin-bottom: 26px; box-shadow: 0 18px 50px rgba(120, 40, 200, .35); }
+.lock__eyebrow { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: var(--red); }
+.lock__title { margin: 10px 0 0; font-size: clamp(34px, 5vw, 52px); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; }
+.lock__text { margin: 14px 0 0; font-size: 16px; line-height: 1.55; color: var(--muted); }
+.lock__form { width: 100%; margin-top: 28px; text-align: left; }
+.lock__label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+.lock__row { display: flex; gap: 10px; }
+.lock__input { flex: 1; min-width: 0; height: 52px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(214, 214, 214, .25); background: rgba(255, 255, 255, .04);
+  font: 500 16px "Manrope", system-ui, sans-serif; color: var(--ink); outline: none; transition: border-color .2s ease, background-color .2s ease; }
+.lock__input:focus { border-color: rgba(255, 90, 110, .7); background: rgba(255, 255, 255, .07); }
+.lock__btn { height: 52px; padding: 0 26px; flex: none; }
+.lock__btn:disabled { opacity: .7; cursor: progress; }
+.lock__error { min-height: 20px; margin: 10px 0 0; font-size: 14px; color: #ff7a88; }
+.lock__form.is-wrong .lock__row { animation: lock-shake .4s ease; }
+@keyframes lock-shake { 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
+.lock__request { margin-top: 18px; font-size: 14px; font-weight: 500; color: #d6d6d6; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(214, 214, 214, .35); }
+@media (max-width: 600px) { .lock__row { flex-direction: column; } .lock__input { flex: none; width: 100%; } .lock__btn { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .lock__form.is-wrong .lock__row { animation: none; } }
 /* ── Sony LIV case study ── */
 .sl-title { margin: 0; max-width: 16ch; font-size: clamp(38px, 6.2vw, 88px); font-weight: 700; line-height: 1.02; letter-spacing: -.035em; }
 .sl-platforms { margin-top: clamp(20px, 2.2vw, 28px); }
@@ -1011,7 +1033,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
           <a class="card" href="#case-sony-live" data-case="sony-live">
             <div class="card__media card__media--img"><img src="assets/projects/sony-live/thumb5.webp" width="1100" height="1150" alt="Sony LIV logo" loading="lazy" decoding="async"></div>
             <div class="card__meta">
-              <h3 class="card__title">Sony LIV</h3>
+              <h3 class="card__title">Sony LIV <span class="card__lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Protected</span></h3>
               <div class="card__row">
                 <p class="card__desc">OTT Streaming</p>
                 <span class="wsb"><span class="wsb__ul" aria-hidden="true"><i class="r"></i><i class="l"></i></span><span class="wsb__word" aria-label="Explore project"><span class="wl" style="--i:0;--r:14">E</span><span class="wl" style="--i:1;--r:13">x</span><span class="wl" style="--i:2;--r:12">p</span><span class="wl" style="--i:3;--r:11">l</span><span class="wl" style="--i:4;--r:10">o</span><span class="wl" style="--i:5;--r:9">r</span><span class="wl" style="--i:6;--r:8">e</span><span class="wl" style="--i:7;--r:7">&nbsp;</span><span class="wl" style="--i:8;--r:6">p</span><span class="wl" style="--i:9;--r:5">r</span><span class="wl" style="--i:10;--r:4">o</span><span class="wl" style="--i:11;--r:3">j</span><span class="wl" style="--i:12;--r:2">e</span><span class="wl" style="--i:13;--r:1">c</span><span class="wl" style="--i:14;--r:0">t</span></span><span class="wsb__ar wsb__ar--r" aria-hidden="true">↗</span><span class="wsb__ar wsb__ar--l" aria-hidden="true">↗</span></span>
@@ -1374,7 +1396,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
 
     <a class="case__next" id="case-sf-next" href="#case-act" data-case="act" data-rev><div><small>Next project</small><strong>ACT</strong></div><span aria-hidden="true">↗</span></a>
   </article>
-  <article class="case__in case__in--vi case__in--sl" id="case-sony-live" hidden>
+  <article class="case__in case__in--vi case__in--sl" id="case-sony-live" hidden data-lock="sony-live">
     <header class="vi-head">
       <p class="sf-eyebrow" data-rev>Sony LIV · Product design · OTT streaming</p>
       <h1 class="sl-title" data-rev style="--d:.06s">Reimagining content discovery. Simplifying the experience.</h1>
@@ -1949,6 +1971,8 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
     if (e.target.closest('#nav-back')) { e.preventDefault(); up(); }
   });
   addEventListener('popstate', () => { const v = viewOfHash(); show(v.view, 'pop', v.slug); });
+  // a protected case study was just unlocked: set up its reveal animations and links like any other case
+  document.addEventListener('case-unlocked', (e) => { if (viewNow() === 'case' && slugNow === e.detail) fillCase(slugNow); });
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && viewNow() !== 'hero' && !busy) up(); });
   { const v = viewOfHash(); if (v.view !== 'hero') { root.classList.add('is-work'); if (v.view === 'case') { root.classList.add('is-case'); slugNow = v.slug; fillCase(v.slug); } measure(); } }   // opened straight from a link
 })();
@@ -2261,6 +2285,108 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
 </script>
 
 <script>document.addEventListener('click', (e) => { const a = e.target.closest('a[data-social]'); if (a && a.getAttribute('href') === '#') e.preventDefault(); });</script>
+<script>
+// Case lock: a protected case study ships encrypted (tools/lock.mjs). Typing the right password decrypts it here.
+// Pure-JS SHA-256 / HMAC / PBKDF2, so it works on plain-http previews too (WebCrypto needs https).
+(() => {
+  const K = new Uint32Array([0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+  const W = new Int32Array(64);
+  const ror = (x, n) => (x >>> n) | (x << (32 - n));
+  const init = () => new Int32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
+  function block(H, b, o) {
+    for (let i = 0; i < 16; i++) W[i] = (b[o + 4 * i] << 24) | (b[o + 4 * i + 1] << 16) | (b[o + 4 * i + 2] << 8) | b[o + 4 * i + 3];
+    for (let i = 16; i < 64; i++) {
+      const x = W[i - 15], y = W[i - 2];
+      W[i] = (W[i - 16] + (ror(x, 7) ^ ror(x, 18) ^ (x >>> 3)) + W[i - 7] + (ror(y, 17) ^ ror(y, 19) ^ (y >>> 10))) | 0;
+    }
+    let a = H[0], bb = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+    for (let i = 0; i < 64; i++) {
+      const t1 = (h + (ror(e, 6) ^ ror(e, 11) ^ ror(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + W[i]) | 0;
+      const t2 = ((ror(a, 2) ^ ror(a, 13) ^ ror(a, 22)) + ((a & bb) ^ (a & c) ^ (bb & c))) | 0;
+      h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = bb; bb = a; a = (t1 + t2) | 0;
+    }
+    H[0] = (H[0] + a) | 0; H[1] = (H[1] + bb) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+    H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+  }
+  // hash msg, continuing from state S that has already absorbed `prefix` bytes (a multiple of 64)
+  function finish(S, msg, prefix) {
+    const H = S.slice(), n = msg.length, full = n - (n % 64);
+    for (let o = 0; o < full; o += 64) block(H, msg, o);
+    const rest = n - full, tail = new Uint8Array(rest < 56 ? 64 : 128);
+    tail.set(msg.subarray(full)); tail[rest] = 0x80;
+    const bits = (prefix + n) * 8, L = tail.length;
+    tail[L - 4] = (bits >>> 24) & 255; tail[L - 3] = (bits >>> 16) & 255; tail[L - 2] = (bits >>> 8) & 255; tail[L - 1] = bits & 255;
+    tail[L - 5] = Math.floor(bits / 4294967296) & 255;
+    for (let o = 0; o < L; o += 64) block(H, tail, o);
+    const out = new Uint8Array(32);
+    for (let i = 0; i < 8; i++) { out[4 * i] = H[i] >>> 24; out[4 * i + 1] = H[i] >>> 16; out[4 * i + 2] = H[i] >>> 8; out[4 * i + 3] = H[i]; }
+    return out;
+  }
+  const sha256 = (m) => finish(init(), m, 0);
+  function hmacKey(key) {
+    if (key.length > 64) key = sha256(key);
+    const pad = (x) => { const p = new Uint8Array(64); for (let i = 0; i < 64; i++) p[i] = (key[i] || 0) ^ x; const S = init(); block(S, p, 0); return S; };
+    const inner = pad(0x36), outer = pad(0x5c);
+    return (msg) => finish(outer, finish(inner, msg, 64), 64);
+  }
+  function pbkdf2(pw, salt, iter, len) {
+    const mac = hmacKey(pw), out = new Uint8Array(len);
+    for (let blk = 1, off = 0; off < len; blk++, off += 32) {
+      const s = new Uint8Array(salt.length + 4); s.set(salt); s[salt.length + 3] = blk;
+      let U = mac(s); const T = U.slice();
+      for (let i = 1; i < iter; i++) { U = mac(U); for (let j = 0; j < 32; j++) T[j] ^= U[j]; }
+      out.set(T.subarray(0, Math.min(32, len - off)), off);
+    }
+    return out;
+  }
+  const b64 = (s) => { const bin = atob(s), a = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return a; };
+  const norm = (pw) => pw.trim().replace(/\s+/g, ' ').toLowerCase();
+  const enc = new TextEncoder();
+
+  // returns the article html, or null for a wrong password
+  function open(payload, pw) {
+    const key = pbkdf2(enc.encode(norm(pw)), b64(payload.salt), payload.iter, 64);
+    const encKey = key.subarray(0, 32), check = hmacKey(key.subarray(32))(enc.encode('unlock'));
+    const want = b64(payload.check);
+    if (want.length !== check.length || want.some((v, i) => v !== check[i])) return null;
+    const data = b64(payload.data), buf = new Uint8Array(36); buf.set(encKey);
+    for (let i = 0, off = 0; off < data.length; i++, off += 32) {
+      buf[32] = i >>> 24; buf[33] = i >>> 16; buf[34] = i >>> 8; buf[35] = i;
+      const ks = sha256(buf);
+      for (let j = 0; j < 32 && off + j < data.length; j++) data[off + j] ^= ks[j];
+    }
+    return new TextDecoder().decode(data);
+  }
+
+  const reveal = (art, html, slug) => {
+    art.innerHTML = html; art.removeAttribute('data-locked');
+    document.dispatchEvent(new CustomEvent('case-unlocked', { detail: slug }));
+  };
+  for (const art of document.querySelectorAll('[data-locked]')) {
+    const slug = art.dataset.locked, store = 'case-unlocked:' + slug;
+    const payloadEl = art.querySelector('[data-lock-payload]'); if (!payloadEl) continue;
+    const payload = JSON.parse(payloadEl.textContent);
+    // unlocked earlier in this tab: open it again without asking
+    try { const saved = sessionStorage.getItem(store); if (saved) { const html = open(payload, saved); if (html) { reveal(art, html, slug); continue; } } } catch (e) {}
+    const form = art.querySelector('.lock__form'), input = art.querySelector('.lock__input'), err = art.querySelector('.lock__error'), btn = art.querySelector('.lock__btn');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pw = input.value; if (!pw.trim()) return;
+      btn.disabled = true; btn.textContent = 'Unlocking…'; err.textContent = '';
+      setTimeout(() => {               // let the button repaint before the work starts
+        let html = null; try { html = open(payload, pw); } catch (x) {}
+        if (html) { try { sessionStorage.setItem(store, pw); } catch (x) {} reveal(art, html, slug); window.scrollTo(0, 0); return; }
+        btn.disabled = false; btn.textContent = 'Unlock';
+        err.textContent = 'That password isn’t right. Please try again.';
+        form.classList.remove('is-wrong'); void form.offsetWidth; form.classList.add('is-wrong');
+        input.select();
+      }, 30);
+    });
+    // focus the box when the locked page opens (not on phones, where it would pop the keyboard)
+    new MutationObserver(() => { if (!art.hidden && art.hasAttribute('data-locked') && matchMedia('(pointer: fine)').matches) setTimeout(() => input.focus({ preventScroll: true }), 350); }).observe(art, { attributes: true, attributeFilter: ['hidden'] });
+  }
+})();
+</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","gsap":"https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js"}}</script>
 <script type="module" src="src/main.js?v=game8"></script>
 </body>

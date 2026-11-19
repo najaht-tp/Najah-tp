@@ -1,3 +1,4 @@
+import { lockArticles } from './lock.mjs';
 import fs from 'fs'; import path from 'path'; import { fileURLToPath } from 'url'; import sharp from 'sharp'; import { build } from 'esbuild';
 const R = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');   // the project root, wherever it lives
 const T = R + '/tools';
@@ -56,5 +57,8 @@ const gbg = fs.existsSync(R + '/assets/game/background.webp') ? b64(rd('assets/g
 const voice = {}; for (const f of fs.readdirSync(R + '/assets/voice')) if (f.endsWith('.m4a')) voice[f.replace('.m4a','')] = rd('assets/voice/' + f).toString('base64');
 const script = '<script>window.__VOICE__=' + JSON.stringify(voice) + (gglb ? ';window.__GAME_GLB__="' + gglb + '";window.__KATANA_GLB__="' + kglb + '";window.__GAME_BG__="' + gbg + '"' : '') + ';window.__NINJA_GLB__="' + glb + '";window.__NINJA_TEX__=' + tex + ';window.__LOADER_GLB__="' + lglb + '";window.__LOADER_TEX__=' + ltex + ';</script>\n<script>' + out.outputFiles[0].text.replace(/<\/script>/g, '<\\/script>') + '</script>';
 html = html.replace(m[0], () => script);
+// protected case studies: encrypted with the password in .secrets/<slug>.txt (see tools/lock.mjs)
+html = lockArticles(html, R, { title: { 'sony-live': 'Sony LIV' }, logo: { 'sony-live': uri['assets/projects/sony-live/thumb5.webp'] } });
+if (/data-lock="/.test(html)) throw new Error('a case study marked data-lock was not encrypted');
 fs.writeFileSync(R + '/index.html', html);
 console.log('index.html', (html.length / 1048576).toFixed(2), 'MB');
