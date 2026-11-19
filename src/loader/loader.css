@@ -1,0 +1,47 @@
+/* ───────── Loader: a cinematic ninja intro ───────── */
+html.is-loading { overflow: hidden; }
+/* hold the hero's entrance animations until the reveal starts */
+html.is-loading .reveal, html.is-loading .ninja__stage, html.is-loading .cta::before, html.is-loading .cta::after,
+html.is-loading .nav__mark::after, html.is-loading .nav__mark img, html.is-loading .foot__status img { animation-play-state: paused; }
+
+.loader { position: fixed; inset: 0; z-index: 1000; overflow: hidden; color: var(--ink, #f7f7f4); contain: strict; }
+.loader[hidden] { display: none; }
+
+/* two halves of the backdrop; the reveal cuts the screen along a diagonal and slides them apart */
+.loader__half { position: absolute; inset: 0; will-change: transform; background: #090f17; }   /* flat, like the page behind it: the crimson lives in .loader__glow, which does not move */
+/* brightens with progress: only its opacity changes, so nothing is repainted */
+.loader__glow { position: absolute; inset: 0; opacity: .3; pointer-events: none; will-change: opacity; overflow: visible; }   /* holds a copy of the hero's own atmosphere image; only its opacity changes */
+
+.loader__stage { position: absolute; inset: 0; opacity: 0; }
+.loader__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+.loader__fx { position: absolute; inset: 0; pointer-events: none; }
+
+.speed { position: absolute; left: 0; top: 0; height: 2px; width: 200px; opacity: 0; pointer-events: none; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .85) 35%, rgba(255, 70, 100, .65) 75%, transparent); will-change: transform, opacity; }
+.loader__ring { position: absolute; left: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; opacity: 0; pointer-events: none;
+  border: 2px solid rgba(255, 110, 135, .75); box-shadow: 0 0 22px rgba(255, 45, 85, .55), inset 0 0 18px rgba(255, 45, 85, .35); will-change: transform, opacity; }
+
+/* the cut: a hot line along the diagonal the screen is split on */
+.loader__slash { position: absolute; left: 50%; top: 50%; height: 3px; width: 10px; opacity: 0; pointer-events: none; border-radius: 3px; transform-origin: 50% 50%;
+  background: linear-gradient(90deg, transparent, #fff 12%, #ff6a82 50%, #fff 88%, transparent);
+  box-shadow: 0 0 22px 5px rgba(255, 45, 85, .85), 0 0 60px 14px rgba(255, 45, 85, .35); }
+
+/* percentage + bar */
+.loader__ui {
+  position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(14px, 5.5vh, 64px)); transform: translateX(-50%);
+  width: min(440px, 78vw); display: grid; justify-items: center; gap: clamp(8px, 1.6vh, 14px);
+}
+.loader__pct { margin: 0; display: flex; align-items: baseline; gap: .08em; line-height: 1; will-change: transform;
+  font-family: "Space Grotesk", "Manrope", system-ui, sans-serif; font-weight: 400; font-size: clamp(34px, min(9vw, 12vh), 104px); letter-spacing: -3px; font-variant-numeric: tabular-nums; color: var(--ink, #f7f7f4); opacity: 0; transition: opacity .3s ease; }
+.loader.is-ready .loader__pct { opacity: 1; }
+.loader__pct small { font-size: .36em; color: var(--red, #c31826); font-weight: 400; letter-spacing: 0; }
+.loader__bar { position: relative; width: 100%; height: 3px; border-radius: 2px; background: rgba(214, 214, 214, .14); }
+.loader__fill { position: absolute; inset: 0; border-radius: inherit; transform-origin: 0 50%; transform: scaleX(0); will-change: transform;
+  background: linear-gradient(90deg, #8e0f1c, #ff2d55 72%, #ffd3da); box-shadow: 0 0 14px rgba(255, 45, 85, .55); }
+.loader__spark { position: absolute; left: 0; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: #fff; opacity: 0; will-change: transform; box-shadow: 0 0 10px 3px rgba(255, 45, 85, .85); }
+.loader.is-ready .loader__spark { opacity: 1; }
+.loader__caption { margin: 0; font-size: 12px; font-weight: 500; letter-spacing: .02em; color: var(--muted, #a7b4be); }
+
+@media (prefers-reduced-motion: reduce) {
+  .loader__spark { display: none; }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "najah-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Najah's portfolio: hero + ninja loader (three.js, GSAP)",
+  "scripts": {
+    "dev": "python3 tools/serve.py 5179",
+    "build": "node tools/build.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.12.5",
+    "three": "0.160.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "sharp": "^0.35.5"
+  }
+}

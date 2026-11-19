@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="880" height="697" viewBox="0 0 880 697" fill="none" xmlns="http://www.w3.org/2000/svg">
+<ellipse id="Teal atmosphere" cx="440" cy="348.5" rx="440" ry="348.5" fill="url(#paint0_radial_0_6)"/>
+<defs>
+<radialGradient id="paint0_radial_0_6" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(440 348.5) scale(440 348.5)">
+<stop stop-color="#CE1E21" stop-opacity="0.55"/>
+<stop offset="0.5" stop-color="#5B0405" stop-opacity="0.27"/>
+<stop offset="1" stop-color="#090F17" stop-opacity="0"/>
+</radialGradient>
+</defs>
+</svg>
