@@ -335,6 +335,11 @@ a { color: inherit; }
   animation: rise .8s var(--ease-out) forwards;
 }
 @keyframes orbit { to { --orbit: 360deg; } }
+/* iPhone and iPad browsers (all WebKit) clip a blurred pseudo-element to a hard rectangle: use a plain soft glow there instead */
+@supports (-webkit-touch-callout: none) {
+  .cta { -webkit-tap-highlight-color: transparent; box-shadow: 0 0 18px rgba(255, 40, 70, .32), 0 0 6px rgba(255, 90, 110, .25); }
+  .cta::after { display: none; }
+}
 @keyframes ninja-in { to { opacity: 1; transform: none; } }
 @keyframes pulse { 50% { opacity: .35; } }
 
