@@ -53,6 +53,13 @@ if (location.protocol === 'https:') { const s = document.createElement('script')
     cursor: image-set(url(assets/cursor-sword.png) 1x, url(assets/cursor-sword@2x.png) 2x) 9 2, pointer;
   }
 }
+/* Katana tip: a crimson dot sits on the blade tip and a soft ring trails behind it, only while the sword cursor shows */
+.tip { position: fixed; left: 0; top: 0; z-index: 4000; pointer-events: none; opacity: 0; transition: opacity .25s ease; will-change: transform; }
+.tip.is-on { opacity: 1; }
+.tip__dot { width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: #ff2d55; box-shadow: 0 0 10px rgba(255, 45, 85, .75); }
+.tip__ring { width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 1.5px solid rgba(255, 90, 110, .45); box-shadow: 0 0 14px rgba(255, 45, 85, .12) inset; }
+.tip__ring.is-down { scale: .72; transition: opacity .25s ease, scale .2s var(--ease-out); }
+.tip__ring { transition: opacity .25s ease, scale .35s var(--ease-out); }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { background: var(--bg); }
@@ -2390,6 +2397,36 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
     // focus the box when the locked page opens (not on phones, where it would pop the keyboard)
     new MutationObserver(() => { if (!art.hidden && art.hasAttribute('data-locked') && matchMedia('(pointer: fine)').matches) setTimeout(() => input.focus({ preventScroll: true }), 350); }).observe(art, { attributes: true, attributeFilter: ['hidden'] });
   }
+})();
+</script>
+<script>
+// Katana tip follower (mouse only): the dot is glued to the pointer (the sword's tip), the ring eases after it.
+(() => {
+  if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const TARGETS = 'a[href], button, [role="button"], summary, .btn, .nav__toggle';
+  const dot = document.createElement('div'); dot.className = 'tip tip__dot'; dot.setAttribute('aria-hidden', 'true');
+  const ring = document.createElement('div'); ring.className = 'tip tip__ring'; ring.setAttribute('aria-hidden', 'true');
+  document.body.append(ring, dot);
+  let x = -100, y = -100, rx = -100, ry = -100, on = false, raf = 0;
+  const loop = () => {
+    const k = still.matches ? 1 : 0.16;
+    rx += (x - rx) * k; ry += (y - ry) * k;
+    dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
+    raf = (on && (Math.abs(x - rx) > 0.1 || Math.abs(y - ry) > 0.1)) ? requestAnimationFrame(loop) : 0;
+  };
+  const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+  addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    x = e.clientX; y = e.clientY;
+    const over = !!(e.target.closest && e.target.closest(TARGETS));
+    if (over !== on) { on = over; if (on) { rx = x; ry = y; } dot.classList.toggle('is-on', on); ring.classList.toggle('is-on', on); }
+    if (on) kick();
+  }, { passive: true });
+  addEventListener('pointerdown', () => ring.classList.add('is-down'));
+  addEventListener('pointerup', () => ring.classList.remove('is-down'));
+  document.addEventListener('mouseleave', () => { on = false; dot.classList.remove('is-on'); ring.classList.remove('is-on'); });
 })();
 </script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","gsap":"https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js"}}</script>
