@@ -57,9 +57,14 @@ if (location.protocol === 'https:') { const s = document.createElement('script')
 .tip { position: fixed; left: 0; top: 0; z-index: 4000; pointer-events: none; opacity: 0; transition: opacity .25s ease; will-change: transform; }
 .tip.is-on { opacity: 1; }
 .tip__dot { width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: #ff2d55; box-shadow: 0 0 10px rgba(255, 45, 85, .75); }
-.tip__ring { width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 1.5px solid rgba(255, 90, 110, .45); box-shadow: 0 0 14px rgba(255, 45, 85, .12) inset; }
+.tip__ring { width: 34px; height: 34px; margin: -17px 0 0 -17px; transition: opacity .25s ease, scale .35s var(--ease-out); }
 .tip__ring.is-down { scale: .72; transition: opacity .25s ease, scale .2s var(--ease-out); }
-.tip__ring { transition: opacity .25s ease, scale .35s var(--ease-out); }
+/* idle: the ring breathes slowly and the dot glows in time with it (on pseudo-elements, so the follow transform is untouched) */
+.tip__ring::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgba(255, 90, 110, .45); box-shadow: 0 0 14px rgba(255, 45, 85, .12) inset; animation: tip-breathe 2.6s ease-in-out infinite; }
+.tip__dot::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 45, 85, .55), rgba(255, 45, 85, 0) 70%); animation: tip-glow 2.6s ease-in-out infinite; }
+@keyframes tip-breathe { 0%, 100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.18); opacity: .5; } }
+@keyframes tip-glow { 0%, 100% { transform: scale(.8); opacity: .5; } 50% { transform: scale(1.5); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tip__ring::before, .tip__dot::after { animation: none; } }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { background: var(--bg); }
