@@ -2382,22 +2382,25 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
   for (const art of document.querySelectorAll('[data-locked]')) {
     const slug = art.dataset.locked, store = 'case-unlocked:' + slug;
     const payloadEl = art.querySelector('[data-lock-payload]'); if (!payloadEl) continue;
-    const payload = JSON.parse(payloadEl.textContent);
+    // the encrypted data is inline (single-file build) or a separate file fetched only when needed (web build)
+    let payload = null;
+    const getPayload = async () => payload || (payload = payloadEl.dataset.src ? await (await fetch(payloadEl.dataset.src)).json() : JSON.parse(payloadEl.textContent));
     // unlocked earlier in this tab: open it again without asking
-    try { const saved = sessionStorage.getItem(store); if (saved) { const html = open(payload, saved); if (html) { reveal(art, html, slug); continue; } } } catch (e) {}
+    let saved = null; try { saved = sessionStorage.getItem(store); } catch (e) {}
+    if (saved) getPayload().then((p) => { const html = open(p, saved); if (html) reveal(art, html, slug); }).catch(() => {});
     const form = art.querySelector('.lock__form'), input = art.querySelector('.lock__input'), err = art.querySelector('.lock__error'), btn = art.querySelector('.lock__btn');
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const pw = input.value; if (!pw.trim()) return;
       btn.disabled = true; btn.textContent = 'Unlocking…'; err.textContent = '';
-      setTimeout(() => {               // let the button repaint before the work starts
-        let html = null; try { html = open(payload, pw); } catch (x) {}
+      getPayload().then((p) => setTimeout(() => {               // let the button repaint before the work starts
+        let html = null; try { html = open(p, pw); } catch (x) {}
         if (html) { try { sessionStorage.setItem(store, pw); } catch (x) {} reveal(art, html, slug); window.scrollTo(0, 0); return; }
         btn.disabled = false; btn.textContent = 'Unlock';
         err.textContent = 'That password isn’t right. Please try again.';
         form.classList.remove('is-wrong'); void form.offsetWidth; form.classList.add('is-wrong');
         input.select();
-      }, 30);
+      }, 30)).catch(() => { btn.disabled = false; btn.textContent = 'Unlock'; err.textContent = 'Couldn’t load the case study. Check your connection and try again.'; });
     });
     // focus the box when the locked page opens (not on phones, where it would pop the keyboard)
     new MutationObserver(() => { if (!art.hidden && art.hasAttribute('data-locked') && matchMedia('(pointer: fine)').matches) setTimeout(() => input.focus({ preventScroll: true }), 350); }).observe(art, { attributes: true, attributeFilter: ['hidden'] });

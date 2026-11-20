@@ -7,9 +7,13 @@ Source design: Figma file `dzGM7qCBD5fzzGAFxYU8Ea` (hero = node 3:2, loader = no
 
     npm install            # once
     npm run dev            # serves the folder at http://127.0.0.1:5179  (open /index.src.html)
-    npm run build          # regenerates index.html (one self-contained file, ~5 MB) from index.src.html + src/ + assets/
+    npm run build          # regenerates index.html (one self-contained file, ~17 MB, works offline) AND site/ (the fast live build)
 
 - **Edit `index.src.html` and `src/`. Never edit `index.html`** (it is generated).
+- **Live site = `site/`** (tools/build-web.mjs; Vercel serves it via vercel.json). Small page + split JS + self-hosted WOFF2 fonts;
+  images lazy, the game chunk loads on "Play game". Commit `site/` after every build.
+- **Sony LIV is password-locked** (tools/lock.mjs): password in `.secrets/sony-live.txt` (never committed). In `site/` the case
+  study and its images are one encrypted file in `site/locked/`; no Sony image except the card thumb is published.
 - Dev page loads three/gsap from jsDelivr via an import map; the build bundles them with esbuild and embeds every asset.
 - Debug URL hashes: `#loaderdebug` (paused loader, `window.__loader.seek(t)` / `.run(t0, t1, fps)`), `#loaderslow=6`,
   `#loadersimple`, `#loaderperf`, `#debug` (hero stepper), `#snap` (placeholder still capture).

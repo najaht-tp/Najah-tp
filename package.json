@@ -6,7 +6,7 @@
   "description": "Najah's portfolio: hero + ninja loader (three.js, GSAP)",
   "scripts": {
     "dev": "python3 tools/serve.py 5179",
-    "build": "node tools/build.mjs"
+    "build": "node tools/build.mjs && node tools/build-web.mjs"
   },
   "dependencies": {
     "gsap": "^3.12.5",

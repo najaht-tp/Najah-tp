@@ -37,7 +37,8 @@ export function encrypt(text, password) {
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
 // Replaces every  <article ... data-lock="slug" ...> ... </article>  in html with its locked version.
-export function lockArticles(html, root, { title = {}, logo = {} } = {}) {
+// payloadFile(slug, payload) -> url: when given, the encrypted data is written to a separate file (fetched on unlock)
+export function lockArticles(html, root, { title = {}, logo = {}, payloadFile = null } = {}) {
   return html.replace(/(<article\b[^>]*\bdata-lock="([a-z0-9-]+)"[^>]*>)([\s\S]*?)(<\/article>)/g, (_, open, slug, body, close) => {
     const file = root + '/.secrets/' + slug + '.txt';
     if (!fs.existsSync(file)) throw new Error(`Locked case study "${slug}" has no password: create .secrets/${slug}.txt`);
@@ -62,7 +63,7 @@ export function lockArticles(html, root, { title = {}, logo = {} } = {}) {
       </form>
       <a class="lock__request" href="${mail}">Request access <span aria-hidden="true">↗</span></a>
     </div>
-    <script type="application/json" data-lock-payload>${JSON.stringify(payload)}</script>
+    ${payloadFile ? `<script type="application/json" data-lock-payload data-src="${esc(payloadFile(slug, payload))}"></script>` : `<script type="application/json" data-lock-payload>${JSON.stringify(payload)}</script>`}
   `;
     return open.replace(/\sdata-lock="[^"]*"/, ` data-locked="${slug}"`) + lockUI + close;
   });
