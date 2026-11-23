@@ -981,7 +981,13 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
   /* the picture takes the height the panel has left (minus the title and button row), so there is no big empty band above and below */
   .work__col { padding-top: 34px; padding-bottom: 28px; align-items: flex-start; }   /* the project sits right under the heading, not centred in the panel */
   .work__col .card__media { aspect-ratio: auto; height: clamp(240px, calc(100svh - var(--nav-h) - var(--mt) - 190px), 600px); }
-  .work__col .card__media--img { height: auto; aspect-ratio: 2080 / 2180; max-height: calc(100svh - var(--nav-h) - var(--mt) - 190px); width: auto; max-width: 100%; margin-inline: auto; border-radius: 22px; }   /* thumbnails keep their own shape: never stretched or cropped, corners stay round */
+  /* thumbnails keep their own shape: never stretched or cropped, corners stay round. The card is as wide as the picture can be at the
+     height the panel allows (a capped height alone left the box full-width and wider than the picture, so its top and bottom were cut) */
+  .work__col .card:has(.card__media--img) { --cw: min(100%, calc((100svh - var(--nav-h) - var(--mt) - 140px) * 2080 / 2180)); width: 100%; }
+  .work__col .card__media--img { height: auto; aspect-ratio: 2080 / 2180; width: var(--cw); max-height: none; margin-inline: auto; border-radius: 22px; }
+  /* the title row lines up with the picture, but never gets narrower than the name + "Explore project" need */
+  .work__col .card:has(.card__media--img) .card__meta { width: max(var(--cw), min(100%, 300px)); margin-inline: auto; }
+  .work__col .card__row { flex-wrap: wrap; row-gap: 10px; }
 }
 
 /* Tablets in portrait (601-900px): the same idea as phones. The ninja takes the height the first screen has left and is scaled up, the
@@ -1584,7 +1590,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
       </form>
       <a class="lock__request" href="mailto:najahuiux@gmail.com?subject=Access%20request%3A%20Sony%20LIV&amp;body=Hi%20Najah%2C%0A%0ACould%20I%20have%20access%20to%20the%20Sony%20LIV%20case%20study%3F%0A%0A">Request access <span aria-hidden="true">↗</span></a>
     </div>
-    <script type="application/json" data-lock-payload data-src="locked/sony-live.f35c2db0e1.json"></script>
+    <script type="application/json" data-lock-payload data-src="locked/sony-live.2b3386ca69.json"></script>
   </article>
   <article class="case__in" id="case-generic">
     <header>
