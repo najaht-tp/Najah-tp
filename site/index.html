@@ -230,6 +230,26 @@ a { color: inherit; }
 .ninja.is-live .ninja__canvas { opacity: 1; }
 .ninja.is-live .ninja__still { opacity: 0; }
 
+/* award seal beside the ninja's head (1440 x 712 stage units). Not part of the ninja layer, so dragging him never moves it, and it is drawn
+   behind him (z-index 1 < the ninja's 2), so he passes in front of it. The link is a separate transparent circle on top (.award-hit),
+   because the ninja's drag area covers the seal. */
+.award, .award-hit { position: absolute; left: calc(866 * var(--u)); top: calc(92 * var(--u)); width: max(88px, calc(128 * var(--u))); }
+.award { z-index: 1; pointer-events: none; }
+.award-hit { z-index: 4; aspect-ratio: 1; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+.award-hit:focus-visible { outline: 2px solid var(--accent, #e11d2e); outline-offset: 4px; }
+.award__in { width: 100%; aspect-ratio: 1; transition: scale .35s var(--ease-out); }
+.stage:has(.award-hit:hover) .award__in, .stage:has(.award-hit:focus-visible) .award__in { scale: 1.06; }
+.stage:has(.award-hit:active) .award__in { scale: .97; transition-duration: .12s; }
+.award__svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .45)); }
+.award__ring { transform-origin: 100px 100px; animation: award-spin 28s linear infinite; }
+@keyframes award-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .award__ring { animation: none; } .award__in { transition: none; } }
+/* phones and tablets: placed by the script after the seal, at least 42px right of the ninja and 42px below the name (--ax / --ay / --as) */
+@media (max-width: 900px) {
+  .award, .award-hit { left: var(--ax, 0px); top: var(--ay, 0px); width: var(--as, 84px); visibility: hidden; }
+  .award.is-placed, .award-hit.is-placed { visibility: visible; }
+}
+
 /* copy columns, vertically centred in the stage */
 .copy { position: absolute; z-index: 3; top: 50%; display: flex; flex-direction: column; transform: translate3d(calc(var(--px, 0) * var(--d, 0) * 1px), calc(var(--py, 0) * var(--d, 0) * 1px - 50%), 0); will-change: transform; }
 .copy--left  { --d: 0;  left: calc(112 * var(--u)); }
@@ -1051,6 +1071,93 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
       <a class="btn cta reveal" style="--i:3" href="#work">Explore my work <span aria-hidden="true">↗</span></a>
     </div>
 
+    <!-- award seal (links to the award page through .award-hit below): sits outside the ninja layer so dragging the ninja never moves it. The ring of words turns slowly;
+         edit the words in the <textPath> lines (the script below spaces them evenly round the ring). -->
+    <div class="award" aria-hidden="true">
+      <div class="award__in reveal" style="--i:4">
+      <svg class="award__svg" viewBox="0 0 200 200">
+        <defs><path id="award-arc" d="M100 167a67 67 0 1 1 0-134a67 67 0 1 1 0 134"/></defs>
+        <circle cx="100" cy="100" r="97" fill="#fff"/>
+        <circle cx="100" cy="100" r="93" fill="none" stroke="#0a0d14" stroke-width="3"/>
+        <g class="award__ring" fill="#0a0d14">
+          <text class="award__word" font-family="Manrope, sans-serif" font-weight="800" font-size="25" letter-spacing="4" stroke="#0a0d14" stroke-width=".9" paint-order="stroke" text-anchor="middle"><textPath href="#award-arc" startOffset="16.667%">AWARD</textPath></text>
+          <text class="award__word" font-family="Manrope, sans-serif" font-weight="800" font-size="25" letter-spacing="4" stroke="#0a0d14" stroke-width=".9" paint-order="stroke" text-anchor="middle"><textPath href="#award-arc" startOffset="50%">DNA</textPath></text>
+          <text class="award__word" font-family="Manrope, sans-serif" font-weight="800" font-size="25" letter-spacing="4" stroke="#0a0d14" stroke-width=".9" paint-order="stroke" text-anchor="middle"><textPath href="#award-arc" startOffset="83.333%">PARIS</textPath></text>
+          <path class="award__star" d="M0-6.5 1.6-1.6 6.5 0 1.6 1.6 0 6.5-1.6 1.6-6.5 0-1.6-1.6z"/>
+          <path class="award__star" d="M0-6.5 1.6-1.6 6.5 0 1.6 1.6 0 6.5-1.6 1.6-6.5 0-1.6-1.6z"/>
+          <path class="award__star" d="M0-6.5 1.6-1.6 6.5 0 1.6 1.6 0 6.5-1.6 1.6-6.5 0-1.6-1.6z"/>
+        </g>
+        <circle cx="100" cy="100" r="55" fill="none" stroke="#0a0d14" stroke-width="3"/>
+        <g fill="#0a0d14">
+          <path d="M100 60 106.2 76.7 124 77.4 110 88.4 114.9 105.6 100 95.7 85.1 105.6 90 88.4 76 77.4 93.8 76.7z"/>
+          <rect x="96.5" y="100" width="7" height="11"/>
+          <path d="M87 111h26l-3.5 7h-19z"/>
+          <rect x="81" y="120" width="38" height="8" rx="1.5"/>
+        </g>
+      </svg>
+      </div>
+    </div>
+    <script>
+    /* award seal: equal gaps between the words with a star in the middle of each gap. On phones and tablets it is placed at least 42px to
+       the right of the ninja and 42px below the name. */
+    (function () {
+      var award = document.currentScript.previousElementSibling, svg = award.querySelector('svg');
+      function lay() {
+        var arc = svg.querySelector('#award-arc'), C = arc.getTotalLength();
+        var words = svg.querySelectorAll('.award__word'), stars = svg.querySelectorAll('.award__star');
+        var L = [], LS = [], W = 0, i;
+        for (i = 0; i < words.length; i++) {
+          LS[i] = parseFloat(words[i].getAttribute('letter-spacing')) || 0;
+          L[i] = words[i].getComputedTextLength() - LS[i]; W += L[i];          /* drop the spacing after the last letter */
+        }
+        var g = (C - W) / words.length, off = g / 2;
+        for (i = 0; i < words.length; i++) {
+          words[i].firstElementChild.setAttribute('startOffset', (off + L[i] / 2 + LS[i] / 2) / C * 100 + '%');
+          off += L[i];
+          var p = arc.getPointAtLength((off + g / 2) % C), a = Math.atan2(p.y - 100, p.x - 100);
+          if (stars[i]) stars[i].setAttribute('transform', 'translate(' + (100 + Math.cos(a) * 76).toFixed(2) + ' ' + (100 + Math.sin(a) * 76).toFixed(2) + ') rotate(' + (a * 180 / Math.PI + 90).toFixed(1) + ')');
+          off += g;
+        }
+      }
+      /* FIG_R = right edge of his head and headband tails, as a fraction of the ninja's drawn box. Measured from his layout position (not
+         where he has been dragged) so the seal stays put while he moves. */
+      var GAP = 42, MIN_GAP = 14, FIG_R = .66, mq = window.matchMedia('(max-width: 900px)');
+      function place() {
+        var hit = document.querySelector('.award-hit'), els = [award, hit];
+        if (!mq.matches) { els.forEach(function (el) { el && el.classList.remove('is-placed'); }); return; }
+        var ninja = document.getElementById('ninja'), tilt = ninja && ninja.querySelector('.ninja__tilt'), name = document.querySelector('.hero .name');
+        var stage = award.offsetParent;
+        if (!tilt || !name || !stage) return;
+        var t = tilt.getBoundingClientRect(), n = ninja.getBoundingClientRect();
+        if (!t.width) return;
+        /* 42px from the ninja and the name where there is room; on narrow phones the seal keeps a good size (92px+) and gives up some of
+           the gap instead, but always stays at least MIN_GAP clear of him and 14px inside the screen edge */
+        var edge = stage.clientWidth - Math.min(parseFloat(getComputedStyle(stage).paddingRight) || 16, 14);
+        var figR = ninja.offsetLeft + (t.left - n.left) + t.width * FIG_R;
+        var size = Math.round(Math.min(116, Math.max(92, t.width * .22)));
+        var x = figR + GAP;
+        if (x + size > edge) { x = Math.max(figR + MIN_GAP, edge - size); size = Math.max(76, Math.min(size, edge - x)); }
+        x = Math.round(x);
+        var y = Math.round(name.offsetTop + name.offsetHeight + GAP);
+        els.forEach(function (el) {
+          if (!el) return;
+          el.style.setProperty('--as', size + 'px'); el.style.setProperty('--ax', x + 'px'); el.style.setProperty('--ay', y + 'px');
+          el.classList.add('is-placed');
+        });
+      }
+      lay();
+      function ready() {
+        place();
+        window.addEventListener('resize', place);
+        window.addEventListener('load', place);
+        if (window.ResizeObserver) { var ro = new ResizeObserver(place); ro.observe(document.getElementById('ninja')); ro.observe(document.querySelector('.hero .name')); }
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { lay(); place(); });
+    })();
+    </script>
+    <a class="award-hit" href="https://competition.adesignaward.com/ada-winner-design.php?ID=159375#Design-159375" target="_blank" rel="noopener" aria-label="A' Design Award winner, Paris: view the award (opens in a new tab)"></a>
+
     <div class="layer ninja" id="ninja" aria-hidden="true">
       <div class="ninja__tilt">
         <div class="ninja__stage">
@@ -1477,7 +1584,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
       </form>
       <a class="lock__request" href="mailto:najahuiux@gmail.com?subject=Access%20request%3A%20Sony%20LIV&amp;body=Hi%20Najah%2C%0A%0ACould%20I%20have%20access%20to%20the%20Sony%20LIV%20case%20study%3F%0A%0A">Request access <span aria-hidden="true">↗</span></a>
     </div>
-    <script type="application/json" data-lock-payload data-src="locked/sony-live.fca43f4c7b.json"></script>
+    <script type="application/json" data-lock-payload data-src="locked/sony-live.f35c2db0e1.json"></script>
   </article>
   <article class="case__in" id="case-generic">
     <header>
