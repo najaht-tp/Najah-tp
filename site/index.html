@@ -233,15 +233,15 @@ a { color: inherit; }
 /* award seal beside the ninja's head (1440 x 712 stage units). Not part of the ninja layer, so dragging him never moves it, and it is drawn
    behind him (z-index 1 < the ninja's 2), so he passes in front of it. The link is a separate transparent circle on top (.award-hit),
    because the ninja's drag area covers the seal. */
-.award, .award-hit { position: absolute; left: calc(866 * var(--u)); top: calc(92 * var(--u)); width: max(88px, calc(128 * var(--u))); }
+.award, .award-hit { position: absolute; left: calc(866 * var(--u)); top: calc(92 * var(--u)); width: max(88px, calc(118 * var(--u))); }
 .award { z-index: 1; pointer-events: none; }
 .award-hit { z-index: 4; aspect-ratio: 1; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
 .award-hit:focus-visible { outline: 2px solid var(--accent, #e11d2e); outline-offset: 4px; }
 .award__in { width: 100%; aspect-ratio: 1; transition: scale .35s var(--ease-out); }
 .stage:has(.award-hit:hover) .award__in, .stage:has(.award-hit:focus-visible) .award__in { scale: 1.06; }
 .stage:has(.award-hit:active) .award__in { scale: .97; transition-duration: .12s; }
-.award__svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .45)); }
-.award__ring { transform-origin: 100px 100px; animation: award-spin 28s linear infinite; }
+.award__svg { display: block; width: 100%; height: 100%; opacity: .95; filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .45)); }
+.award__ring { transform-origin: 100px 100px; animation: award-spin 48s linear infinite; }   /* slow: noticed, not watched */
 @keyframes award-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .award__ring { animation: none; } .award__in { transition: none; } }
 /* phones and tablets: placed by the script after the seal, at least 42px right of the ninja and 42px below the name (--ax / --ay / --as) */
@@ -1083,18 +1083,18 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
       <div class="award__in reveal" style="--i:4">
       <svg class="award__svg" viewBox="0 0 200 200">
         <defs><path id="award-arc" d="M100 167a67 67 0 1 1 0-134a67 67 0 1 1 0 134"/></defs>
-        <circle cx="100" cy="100" r="97" fill="#fff"/>
-        <circle cx="100" cy="100" r="93" fill="none" stroke="#0a0d14" stroke-width="3"/>
-        <g class="award__ring" fill="#0a0d14">
-          <text class="award__word" font-family="Manrope, sans-serif" font-weight="800" font-size="25" letter-spacing="4" stroke="#0a0d14" stroke-width=".25" paint-order="stroke" text-anchor="middle"><textPath href="#award-arc" startOffset="16.667%">AWARD</textPath></text>
-          <text class="award__word" font-family="Manrope, sans-serif" font-weight="800" font-size="25" letter-spacing="4" stroke="#0a0d14" stroke-width=".25" paint-order="stroke" text-anchor="middle"><textPath href="#award-arc" startOffset="50%">DNA</textPath></text>
-          <text class="award__word" font-family="Manrope, sans-serif" font-weight="800" font-size="25" letter-spacing="4" stroke="#0a0d14" stroke-width=".25" paint-order="stroke" text-anchor="middle"><textPath href="#award-arc" startOffset="83.333%">PARIS</textPath></text>
+        <circle cx="100" cy="100" r="97" fill="#f4f2ee"/>
+        <circle cx="100" cy="100" r="93" fill="none" stroke="#1b1e26" stroke-width="2"/>
+        <g class="award__ring" fill="#1b1e26">
+          <text class="award__word" font-family="Manrope, sans-serif" font-weight="600" font-size="23" letter-spacing="4.4" text-anchor="middle"><textPath href="#award-arc" startOffset="16.667%">AWARD</textPath></text>
+          <text class="award__word" font-family="Manrope, sans-serif" font-weight="600" font-size="23" letter-spacing="4.4" text-anchor="middle"><textPath href="#award-arc" startOffset="50%">DNA</textPath></text>
+          <text class="award__word" font-family="Manrope, sans-serif" font-weight="600" font-size="23" letter-spacing="4.4" text-anchor="middle"><textPath href="#award-arc" startOffset="83.333%">PARIS</textPath></text>
           <path class="award__star" d="M0-6.5 1.6-1.6 6.5 0 1.6 1.6 0 6.5-1.6 1.6-6.5 0-1.6-1.6z"/>
           <path class="award__star" d="M0-6.5 1.6-1.6 6.5 0 1.6 1.6 0 6.5-1.6 1.6-6.5 0-1.6-1.6z"/>
           <path class="award__star" d="M0-6.5 1.6-1.6 6.5 0 1.6 1.6 0 6.5-1.6 1.6-6.5 0-1.6-1.6z"/>
         </g>
-        <circle cx="100" cy="100" r="55" fill="none" stroke="#0a0d14" stroke-width="3"/>
-        <g fill="#0a0d14">
+        <circle cx="100" cy="100" r="55" fill="none" stroke="#1b1e26" stroke-width="2"/>
+        <g fill="#1b1e26">
           <path d="M100 60 106.2 76.7 124 77.4 110 88.4 114.9 105.6 100 95.7 85.1 105.6 90 88.4 76 77.4 93.8 76.7z"/>
           <rect x="96.5" y="100" width="7" height="11"/>
           <path d="M87 111h26l-3.5 7h-19z"/>
@@ -1590,7 +1590,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
       </form>
       <a class="lock__request" href="mailto:najahuiux@gmail.com?subject=Access%20request%3A%20Sony%20LIV&amp;body=Hi%20Najah%2C%0A%0ACould%20I%20have%20access%20to%20the%20Sony%20LIV%20case%20study%3F%0A%0A">Request access <span aria-hidden="true">↗</span></a>
     </div>
-    <script type="application/json" data-lock-payload data-src="locked/sony-live.ff8ca2dac1.json"></script>
+    <script type="application/json" data-lock-payload data-src="locked/sony-live.9b6327308b.json"></script>
   </article>
   <article class="case__in" id="case-generic">
     <header>
