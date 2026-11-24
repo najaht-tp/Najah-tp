@@ -8,7 +8,8 @@ import { loadModel, loadTextures, applyTextures, createContactShadow, idle, prec
 const CLIP   = 'Agree_Gesture';   // plays first, until CLAP_UNTIL
 const DANCE  = 'All_Night_Dance'; // then blends into this one, plays through once, then settles
 const CLAP_UNTIL = 5.5;          // clip time (s) at which the gesture hands over to the dance
-// chibi ninja, in this order, over and over: dive down from the sky and land, a Hip Hop dance, a jog on the spot, then the dive again
+// chibi ninja, in this order, over and over: dive down from the sky and land, a Hip Hop dance, a jog on the spot, a flying-kick fight, then the dive again
+const FIGHT_RATE = 1, FIGHT_IN = 0.5;
 const RUN_FOR = 4, RUN_RATE = 0.75, DANCE_RATE = 0.85, DIVE_RATE = 1, SOFT = 1.5, DIVE_IN = 0.35;   // seconds / playback speeds / blend lengths
 const REST_FOR = 3;              // after the dance the ninja settles into a standing pose and holds it this long (s), then the whole sequence restarts
 const FADE_TO_DANCE = 0.9, FADE_TO_STAND = 1.2;  // blend lengths (s)
@@ -74,7 +75,7 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
   const TEX = window.__NINJA_TEX__ || { base: DIR + 'tex-base.webp', normal: DIR + 'tex-normal.webp', mr: DIR + 'tex-mr.webp' };
   let gltf, textures;
   try {
-    gltf = await loadModel({ embedded: window.__NINJA_GLB__, url: V3 ? DIR + 'ninja.glb' : 'assets/ninja-clap.min.glb' });
+    gltf = await loadModel({ embedded: window.__NINJA_GLB__, url: V3 ? DIR + 'ninja-loop.glb' : 'assets/ninja-clap.min.glb' });
     progress?.done('hero-model');
     let loaded = 0;
     textures = await loadTextures(TEX, () => progress?.set('hero-tex', ++loaded / 3 * 0.95));
@@ -95,6 +96,9 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
   const danceAct = danceClip && mixer.clipAction(danceClip);
   const standAct = V3 ? mixer.clipAction(THREE.AnimationClip.findByName(gltf.animations, 'Agree_Gesture')) : null;   // its first frame is the standing rest pose
   const diveClip = V3 ? THREE.AnimationClip.findByName(gltf.animations, 'Dive_Down_Land') : null;
+  const fightClip = V3 ? THREE.AnimationClip.findByName(gltf.animations, 'Flying_Fist_Kick') : null;
+  const fightAct = V3 ? mixer.clipAction(fightClip) : null;
+  if (V3) { fightAct.timeScale = FIGHT_RATE; fightAct.setLoop(THREE.LoopOnce, 1); fightAct.clampWhenFinished = true; }
   const diveAct = V3 ? mixer.clipAction(THREE.AnimationClip.findByName(gltf.animations, 'Dive_Down_Land')) : null;
   if (V3) { clapAct.timeScale = RUN_RATE; if (danceAct) danceAct.timeScale = DANCE_RATE; diveAct.timeScale = DIVE_RATE; diveAct.setLoop(THREE.LoopOnce, 1); diveAct.clampWhenFinished = true; }
 
@@ -159,18 +163,19 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
   if (danceAct) { if (V3) danceAct.setLoop(THREE.LoopRepeat, Infinity); else { danceAct.setLoop(THREE.LoopOnce, 1); danceAct.clampWhenFinished = true; } }
 
   // Blends are driven by hand with an ease-in-out curve (smootherstep) so neither clip lurches in or out.
-  let phase = V3 ? 'dive' : 'clap', fade = null, restT = 0, runT = 0, danceT = 0, diveT = 0;
+  let phase = V3 ? 'dive' : 'clap', fade = null, restT = 0, runT = 0, danceT = 0, diveT = 0, fightT = 0;
   const ease = (x) => x * x * x * (x * (x * 6 - 15) + 10);
   const startFade = (from, to, dur, toPhase) => { to.enabled = true; to.setEffectiveWeight(0); fade = { from, to, dur, t: 0 }; phase = toPhase; };
   let toDance = () => { danceT = 0; danceAct.reset().play(); danceAct.setEffectiveWeight(0); startFade(clapAct, danceAct, FADE_TO_DANCE, 'dance'); };
   // back to the standing pose (frame 0 of the gesture clip), held still while paused, then the sequence restarts
   let toRun = null;
   let toStand = () => { if (V3) { runT = 0; clapAct.reset().play(); clapAct.setEffectiveWeight(0); startFade(danceAct, clapAct, FADE_TO_DANCE, 'clap'); return; } clapAct.reset().play(); clapAct.time = 0; clapAct.paused = true; clapAct.setEffectiveWeight(0); startFade(danceAct, clapAct, FADE_TO_STAND, 'rest'); };
-  let toDive = null;
+  let toDive = null, toFight = null;
   if (V3) {
     toDance = () => { danceT = 0; danceAct.reset().play(); danceAct.timeScale = DANCE_RATE; danceAct.setEffectiveWeight(0); startFade(diveAct, danceAct, 1.0, 'dance'); };
     toRun = () => { runT = 0; clapAct.reset().play(); clapAct.timeScale = RUN_RATE; clapAct.setEffectiveWeight(0); startFade(danceAct, clapAct, SOFT, 'clap'); };
-    toDive = () => { diveT = 0; diveAct.reset().play(); diveAct.timeScale = DIVE_RATE; diveAct.setEffectiveWeight(0); startFade(clapAct, diveAct, DIVE_IN, 'dive'); };
+    toFight = () => { fightT = 0; fightAct.reset().play(); fightAct.timeScale = FIGHT_RATE; fightAct.setEffectiveWeight(0); startFade(clapAct, fightAct, FIGHT_IN, 'fight'); };
+    toDive = () => { diveT = 0; diveAct.reset().play(); diveAct.timeScale = DIVE_RATE; diveAct.setEffectiveWeight(0); startFade(fightAct, diveAct, DIVE_IN, 'dive'); };
   }
 
   const clock = new THREE.Clock();
@@ -192,7 +197,8 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
       if (V3) {
         if (phase === 'dive' && (diveT += dt) >= diveClip.duration / DIVE_RATE - 1.0) toDance();
         else if (phase === 'dance' && (danceT += dt) >= danceClip.duration / DANCE_RATE - SOFT) toRun();
-        else if (phase === 'clap' && (runT += dt) >= RUN_FOR) toDive();
+        else if (phase === 'clap' && (runT += dt) >= RUN_FOR) toFight();
+        else if (phase === 'fight' && (fightT += dt) >= fightClip.duration / FIGHT_RATE - DIVE_IN) toDive();
       }
       else if (phase === 'clap' && clapAct.time >= CLAP_UNTIL) toDance();
       else if (phase === 'dance' && danceAct.time >= danceClip.duration - FADE_TO_STAND) toStand();
