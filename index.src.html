@@ -812,6 +812,20 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
   .nav::after { left: var(--side); right: var(--side); }
   .nav__mark { display: none; }
 
+  /* The top bar stays pinned while the page scrolls. At the top of the page it looks exactly as before (plain, with its thin line);
+     once the visitor scrolls, a pane of frosted "liquid" glass fades in behind it: the page slides under it and shows through,
+     blurred and a little brighter, with a light edge. The glass is its own layer that only fades (opacity), so it stays smooth. */
+  .nav { position: sticky; top: 0; z-index: 30; padding-top: env(safe-area-inset-top, 0px); height: calc(var(--nav-h) + env(safe-area-inset-top, 0px)); }
+  .nav::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .35s var(--ease-out);
+    background: linear-gradient(180deg, rgba(14, 22, 33, .78), rgba(9, 15, 23, .58));
+    -webkit-backdrop-filter: blur(22px) saturate(1.7); backdrop-filter: blur(22px) saturate(1.7);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .07), 0 10px 30px rgba(0, 0, 0, .28);
+  }
+  .nav.is-scrolled::before { opacity: 1; }
+  .nav::after { transition: opacity .35s var(--ease-out); }
+  .nav.is-scrolled::after { opacity: 0; }
+
   /* hamburger: a 40px round button with a thin stroke, same size as the photo on the left; bars cross into an X */
   .nav__toggle {
     position: relative; display: grid; place-content: center; gap: 5px; width: 40px; height: 40px; margin: 0;
@@ -832,13 +846,34 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
     width: min(260px, calc(100vw - 2 * var(--side)));
     flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0;
     padding: 8px;
-    background: rgba(9, 15, 23, .9); -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
-    border: 1px solid rgba(214, 214, 214, .18); border-radius: 20px; box-shadow: 0 18px 40px rgba(0, 0, 0, .5);
+    background: linear-gradient(180deg, rgba(30, 40, 55, .62), rgba(14, 22, 33, .56)); -webkit-backdrop-filter: blur(30px) saturate(190%); backdrop-filter: blur(30px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, .16); border-radius: 22px; box-shadow: 0 22px 50px rgba(0, 0, 0, .5), 0 2px 10px rgba(0, 0, 0, .25);
     font-size: 16px; letter-spacing: -.2px; color: var(--ink);
-    visibility: hidden; opacity: 0; transform: translate3d(0, -6px, 0) scale(.96); transform-origin: top right;
-    transition: opacity .2s ease, transform .3s var(--ease-apple), visibility 0s linear .3s;
+    /* closed: shrunk and blurred into the hamburger button (its centre is 20px in from the popover's right edge, just above its top) */
+    visibility: hidden; opacity: 0; transform: scale(.14, .1); border-radius: 36px; filter: blur(9px);
+    transform-origin: calc(100% - 20px) calc(-1 * (var(--nav-h) / 2 + 6px));
+    transition: opacity .16s ease .24s, transform .4s cubic-bezier(.5, 0, .7, .5), border-radius .4s ease, filter .3s ease, visibility 0s linear .4s;
   }
-  .nav__links.is-open { visibility: visible; opacity: 1; transform: none; transition-delay: 0s; }
+  /* open (like the iOS pop-up menu): the glass comes out of the button already large but soft and blurred, sharpens within a beat,
+     swells a touch past its size and settles. Closing is slower: it blurs, rounds off and drains back into the button. */
+  .nav__links.is-open { visibility: visible; opacity: 1; transform: none; border-radius: 22px; filter: none; transition-delay: 0s; animation: nav-pop .5s linear; }
+  @keyframes nav-pop {
+    0%   { opacity: 0; transform: scale(.3, .22); border-radius: 34px; filter: blur(10px); animation-timing-function: cubic-bezier(.16, .84, .3, 1); }
+    26%  { opacity: 1; transform: scale(.93, .88); border-radius: 26px; filter: blur(4px); animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
+    52%  { transform: scale(1.035, 1.05); filter: blur(0); animation-timing-function: cubic-bezier(.4, 0, .3, 1); }
+    76%  { transform: scale(.992, .99); animation-timing-function: cubic-bezier(.4, 0, .3, 1); }
+    100% { opacity: 1; transform: scale(1); border-radius: 22px; filter: blur(0); }
+  }
+  .nav__links::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(130% 90% at 80% -12%, rgba(255, 255, 255, .2), rgba(255, 255, 255, 0) 55%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 -1px 0 rgba(255, 255, 255, .05); }
+  /* the items come in softly, a beat behind the glass: fade up out of a blur */
+  .nav__links.is-open > * { animation: nav-item .4s cubic-bezier(.2, .8, .3, 1) both; }
+  .nav__links.is-open > :nth-child(1) { animation-delay: .06s; } .nav__links.is-open > :nth-child(2) { animation-delay: .09s; }
+  .nav__links.is-open > :nth-child(3) { animation-delay: .12s; } .nav__links.is-open > :nth-child(4) { animation-delay: .15s; }
+  @keyframes nav-item { from { opacity: 0; filter: blur(7px); transform: translateY(-6px) scale(.96); } to { opacity: 1; filter: blur(0); transform: none; } }
+  /* the hamburger gives a little squeeze as it hands over to the bubble */
+  .nav__toggle[aria-expanded="true"] { animation: nav-squeeze .5s cubic-bezier(.3, 1.4, .5, 1); }
+  @keyframes nav-squeeze { 0% { transform: scale(1); } 25% { transform: scale(.88); } 100% { transform: scale(1); } }
   /* both actions are buttons here, as on desktop: View CV is the quiet grey secondary, Connect me the red primary */
   .nav__links { gap: 8px; }
   .nav__links a:not(.btn) {
@@ -978,7 +1013,8 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) {
   .nav__mark::after, .nav__mark img, .cta::before, .cta::after { animation: none; }
   .cta.reveal { animation: fade .4s ease forwards; }
-  .nav__links { transform: none; transition: opacity .2s ease, visibility 0s linear .2s; }
+  .nav__links, .nav__links.is-open { transform: none; filter: none; animation: none; transition: opacity .2s ease, visibility 0s linear .2s; }
+  .nav__links.is-open > *, .nav__toggle[aria-expanded="true"] { animation: none; }
   .nav__toggle span { transition: none; }
   .role__rot > span, .role__rot > span.is-on, .role__rot > span.is-off { transform: none; filter: none; transition: opacity .4s ease; }
   .reveal, .ninja__stage { animation: fade .4s ease forwards; transform: none; }
@@ -2130,6 +2166,10 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
     menu.classList.toggle('is-open', open);
   };
   btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+  // the glass behind the bar appears only once the page has scrolled
+  const bar = document.querySelector('.nav'); let tick = 0;
+  const upd = () => { tick = 0; if (bar) bar.classList.toggle('is-scrolled', scrollY > 8); };
+  addEventListener('scroll', () => { if (!tick) tick = requestAnimationFrame(upd); }, { passive: true }); upd();
   menu.addEventListener('click', (e) => { if (e.target.closest('a')) set(false); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') { set(false); btn.focus(); } });
   document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.nav')) set(false); });
