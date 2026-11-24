@@ -187,7 +187,7 @@ a { color: inherit; }
    because the ninja's drag area covers the seal. */
 .award, .award-hit { position: absolute; left: calc(855 * var(--u)); top: calc(81 * var(--u)); width: max(100px, calc(140 * var(--u))); }
 .award { z-index: 1; pointer-events: none; }
-.award-hit { z-index: 4; aspect-ratio: 1; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+.award-hit { z-index: 5; aspect-ratio: 1; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
 .award-hit:focus-visible { outline: 2px solid var(--accent, #e11d2e); outline-offset: 4px; }
 .award__in { width: 100%; aspect-ratio: 1; transition: scale .35s var(--ease-out); }
 .stage:has(.award-hit:hover) .award__in, .stage:has(.award-hit:focus-visible) .award__in { scale: 1.06; }
@@ -909,7 +909,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
      scaled-up head needs, minus the empty strip under his feet). svh is the screen height with Safari's toolbars showing, so this holds
      on a real iPhone too. 200px to 500px. */
   .ninja { --nh: clamp(200px, calc((100svh - 434px) / 1.12), min(112vw, 500px)); height: var(--nh); margin-top: calc(var(--nh) * .2 + 6px); margin-bottom: calc(var(--nh) * -.08); }
-  .ninja__tilt { transform: scale(1.4); transform-origin: 50% 88%; }
+  .ninja__tilt { transform: scale(1.58); transform-origin: 50% 88%; }
   html.embedded .ninja { --nh: min(104vw, 460px); }   /* in a self-resizing frame, svh feeds back on itself */
   .copy--left .lede { margin-top: 56px; }
   .cta { margin-top: 24px; }
@@ -948,11 +948,19 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
   .stage { padding-top: 16px; }
   .eyebrow { margin-bottom: 36px; }
   .ninja { --nh: clamp(300px, calc((100svh - 560px) / 1.12), 760px); height: var(--nh); margin-top: calc(var(--nh) * .2 + 6px); margin-bottom: calc(var(--nh) * -.08); }
-  .ninja__tilt { transform: scale(1.4); transform-origin: 50% 88%; }
+  .ninja__tilt { transform: scale(1.5); transform-origin: 50% 88%; }
   html.embedded .ninja { --nh: min(104vw, 460px); }
   .copy--left .lede { margin-top: 34px; }
   .cta { margin-top: 30px; }
   .copy--right { margin-top: 48px; }
+}
+
+/* Phones and tablets: the ninja is the front-most thing on the screen (in front of the name, the badge and the text), so when he drops in
+   he passes over all of it. His canvas reaches up past his own box for that; he never takes a tap (the buttons under him stay tappable). */
+@media (max-width: 900px) {
+  .ninja { z-index: 4; pointer-events: none; }
+  .ninja__tilt { pointer-events: none; }
+  .ninja__canvas { top: calc(var(--nh, 360px) * -1); height: calc(100% + var(--nh, 360px)); }
 }
 
 /* Tablets in landscape (iPad-shaped screens, wider than 900px but not 16:9): the ninja is scaled up a little more. */

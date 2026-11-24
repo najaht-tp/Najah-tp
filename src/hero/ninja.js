@@ -44,6 +44,7 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
 
   const camera = new THREE.PerspectiveCamera(28, 4 / 5, 0.01, 50);
 
+  let fallExtra = 0;    // extra height (metres) added to the start of the dive when the canvas is taller than his box
   let framing = null;   // { size, mid } measured over every pose of every clip
   const frame = () => {
     if (!framing) return;
@@ -51,9 +52,14 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
     const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
     const distV = (size.y / 2) / t;
     const distH = (size.x / 2) / (t * camera.aspect);   // keep the full arm span in view on narrow canvases
-    const dist = Math.max(distV, distH) + size.z / 2;
-    camera.position.set(mid.x, mid.y, mid.z + dist);
-    camera.lookAt(mid);
+    const dist0 = Math.max(distV, distH) + size.z / 2;
+    // when the canvas reaches up above his box (phones), keep him the same size and place and just show more room above him
+    const par = canvas.parentElement, ext = par && par.clientHeight ? Math.max(0, canvas.clientHeight / par.clientHeight - 1) : 0;
+    const dist = dist0 * (1 + ext), up = ext * dist0 * t;
+    fallExtra = ext * 2 * dist0 * t + size.y * 0.15;          // how much higher the dive starts, so he still drops in from out of the frame
+    if (!ext) fallExtra = 0;
+    camera.position.set(mid.x, mid.y + up, mid.z + dist);
+    camera.lookAt(mid.x, mid.y + up, mid.z);
     camera.near = dist / 50; camera.far = dist * 20;
     camera.updateProjectionMatrix();
   };
@@ -182,6 +188,7 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
       if (k >= 1) { fade.from.enabled = false; fade.to.setEffectiveWeight(1); fade = null; restT = 0; }
     }
     mixer.update(dt);
+    if (V3) { const dw = diveAct.getEffectiveWeight(); model.position.y = fallExtra && dw > 0 ? fallExtra * dw * Math.pow(Math.max(0, 1 - diveAct.time / 0.8), 1.4) : 0; model.updateMatrixWorld(true); }
     updateShadow();
     if (danceAct && !fade) {
       if (V3) {
