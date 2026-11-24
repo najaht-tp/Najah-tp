@@ -881,6 +881,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
     color: var(--ink); cursor: pointer; -webkit-tap-highlight-color: transparent;
     transition: transform .16s var(--ease-out), background-color .2s ease, border-color .25s ease;
   }
+  .nav__toggle { z-index: 25; }   /* always above the menu bubble, so a tap on it can never hit the menu */
   .nav__toggle::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; }   /* larger touch area */
   .nav__toggle:active { transform: scale(.94); background: rgba(255, 255, 255, .1); }
   .nav__toggle[aria-expanded="true"] { border-color: rgba(255, 110, 135, .6); }
@@ -898,19 +899,19 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
     border: 1px solid rgba(255, 255, 255, .16); border-radius: 22px; box-shadow: 0 22px 50px rgba(0, 0, 0, .5), 0 2px 10px rgba(0, 0, 0, .25);
     font-size: 16px; letter-spacing: -.2px; color: var(--ink);
     /* closed: shrunk and blurred into the hamburger button (its centre is 20px in from the popover's right edge, just above its top) */
-    visibility: hidden; opacity: 0; transform: scale(.14, .1); border-radius: 36px; filter: blur(9px);
+    visibility: hidden; opacity: 0; transform: scale(.14, .1); border-radius: 36px; pointer-events: none;
     transform-origin: calc(100% - 20px) calc(-1 * (var(--nav-h) / 2 + 6px));
-    transition: opacity .16s ease .24s, transform .4s cubic-bezier(.5, 0, .7, .5), border-radius .4s ease, filter .3s ease, visibility 0s linear .4s;
+    transition: opacity .2s ease .2s, transform .4s cubic-bezier(.5, 0, .7, .5), border-radius .4s ease, visibility 0s linear .4s;
   }
   /* open (like the iOS pop-up menu): the glass comes out of the button already large but soft and blurred, sharpens within a beat,
      swells a touch past its size and settles. Closing is slower: it blurs, rounds off and drains back into the button. */
-  .nav__links.is-open { visibility: visible; opacity: 1; transform: none; border-radius: 22px; filter: none; transition-delay: 0s; animation: nav-pop .5s linear; }
+  .nav__links.is-open { visibility: visible; opacity: 1; transform: none; border-radius: 22px; pointer-events: auto; transition-delay: 0s; animation: nav-pop .5s linear; }
   @keyframes nav-pop {
-    0%   { opacity: 0; transform: scale(.3, .22); border-radius: 34px; filter: blur(10px); animation-timing-function: cubic-bezier(.16, .84, .3, 1); }
-    26%  { opacity: 1; transform: scale(.93, .88); border-radius: 26px; filter: blur(4px); animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
-    52%  { transform: scale(1.035, 1.05); filter: blur(0); animation-timing-function: cubic-bezier(.4, 0, .3, 1); }
+    0%   { opacity: 0; transform: scale(.3, .22); border-radius: 34px; animation-timing-function: cubic-bezier(.16, .84, .3, 1); }
+    26%  { opacity: 1; transform: scale(.93, .88); border-radius: 26px; animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
+    52%  { transform: scale(1.035, 1.05); animation-timing-function: cubic-bezier(.4, 0, .3, 1); }
     76%  { transform: scale(.992, .99); animation-timing-function: cubic-bezier(.4, 0, .3, 1); }
-    100% { opacity: 1; transform: scale(1); border-radius: 22px; filter: blur(0); }
+    100% { opacity: 1; transform: scale(1); border-radius: 22px; }
   }
   .nav__links::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
     background: radial-gradient(130% 90% at 80% -12%, rgba(255, 255, 255, .2), rgba(255, 255, 255, 0) 55%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 -1px 0 rgba(255, 255, 255, .05); }
@@ -1061,7 +1062,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) {
   .nav__mark::after, .nav__mark img, .cta::before, .cta::after { animation: none; }
   .cta.reveal { animation: fade .4s ease forwards; }
-  .nav__links, .nav__links.is-open { transform: none; filter: none; animation: none; transition: opacity .2s ease, visibility 0s linear .2s; }
+  .nav__links, .nav__links.is-open { transform: none; animation: none; transition: opacity .2s ease, visibility 0s linear .2s; }
   .nav__links.is-open > *, .nav__toggle[aria-expanded="true"] { animation: none; }
   .nav__toggle span { transition: none; }
   .role__rot > span, .role__rot > span.is-on, .role__rot > span.is-off { transform: none; filter: none; transition: opacity .4s ease; }
@@ -1637,7 +1638,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
       </form>
       <a class="lock__request" href="mailto:najahuiux@gmail.com?subject=Access%20request%3A%20Sony%20LIV&amp;body=Hi%20Najah%2C%0A%0ACould%20I%20have%20access%20to%20the%20Sony%20LIV%20case%20study%3F%0A%0A">Request access <span aria-hidden="true">↗</span></a>
     </div>
-    <script type="application/json" data-lock-payload data-src="locked/sony-live.6fc07fc022.json"></script>
+    <script type="application/json" data-lock-payload data-src="locked/sony-live.3469c8fa3d.json"></script>
   </article>
   <article class="case__in" id="case-generic">
     <header>
@@ -1996,7 +1997,8 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
     btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
     menu.classList.toggle('is-open', open);
   };
-  btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+  let lastToggle = 0;
+  btn.addEventListener('click', (e) => { const now = performance.now(); if (now - lastToggle < 400) { e.preventDefault(); return; } lastToggle = now; set(btn.getAttribute('aria-expanded') !== 'true'); });
   // the glass behind the bar appears only once the page has scrolled
   const bar = document.querySelector('.nav'); let tick = 0;
   const upd = () => { tick = 0; if (bar) bar.classList.toggle('is-scrolled', scrollY > 8); };
