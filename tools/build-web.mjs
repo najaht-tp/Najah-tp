@@ -39,7 +39,7 @@ const faces = '@font-face{font-family:"Manrope";font-weight:200 800;font-display
 html = html.replace('<style>\n', '<style>\n' + faces);
 const preloads = ['assets/fonts/YoruKaze-Light.woff2', 'assets/fonts/manrope.woff2']
   .map((f) => `<link rel="preload" as="font" type="font/woff2" href="${f}" crossorigin>`).join('\n');
-html = html.replace('<link rel="preload" as="image" href="assets/ninja-still.webp">', () => preloads + '\n<link rel="preload" as="image" href="assets/ninja-still.webp">');
+html = html.replace('<link rel="preload" as="image" href="assets/hero-v3/ninja-still.webp">', () => preloads + '\n<link rel="preload" as="image" href="assets/hero-v3/ninja-still.webp">');
 
 // the protected case study: its images go inside the encrypted file, which is written separately
 const lockedArt = html.match(/<article\b[^>]*\bdata-lock="sony-live"[^>]*>[\s\S]*?<\/article>/);
@@ -69,9 +69,9 @@ html = html.replace('</title>', () => `</title>\n<link rel="modulepreload" href=
 // assets the page and the scripts ask for (the original-size and protected files are left out)
 const avatar = await sharp(rd('assets/avatar.png')).resize(160, 160, { fit: 'cover' }).png({ compressionLevel: 9 }).toBuffer();
 write('assets/avatar.png', avatar);
-for (const f of ['ninja-still.webp', 'shimmer-texture.webp', 'cursor-sword.png', 'cursor-sword@2x.png', 'favicon.svg', 'favicon-32.png', 'apple-touch-icon.png',
-  'monogram.svg', 'atmosphere.svg', 'available.svg', 'ninja-clap.min.glb', 'tex-base.webp', 'tex-normal.webp', 'tex-mr.webp']) copy('assets/' + f);
-for (const dir of ['loader', 'game', 'voice']) for (const f of fs.readdirSync(R + '/assets/' + dir)) if (!f.startsWith('.')) copy(`assets/${dir}/${f}`);
+for (const f of ['shimmer-texture.webp', 'cursor-sword.png', 'cursor-sword@2x.png', 'favicon.svg', 'favicon-32.png', 'apple-touch-icon.png',
+  'monogram.svg', 'atmosphere.svg', 'available.svg', ]) copy('assets/' + f);
+for (const dir of ['loader', 'loader-v3', 'hero-v3', 'game', 'voice']) for (const f of fs.readdirSync(R + '/assets/' + dir)) if (!f.startsWith('.')) copy(`assets/${dir}/${f}`);
 const walk = (d) => fs.readdirSync(R + '/' + d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(d + '/' + e.name) : [d + '/' + e.name]);
 for (const f of walk('assets/projects')) {
   if (f.startsWith('assets/projects/sony-live/') && !f.endsWith('/thumb5.webp')) continue;     // protected: only the card image is public

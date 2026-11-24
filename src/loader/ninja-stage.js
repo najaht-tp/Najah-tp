@@ -1,6 +1,7 @@
 // The loader's 3D ninja. Pure rendering: the loader timeline decides the pose (clip times and weights) and where
 // the ninja is on screen; this module just poses the rig, frames the camera and reports where the hand/feet are.
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { loadModel, loadTextures, applyTextures, createContactShadow, idle, precompile } from '../shared/assets.js';
 import { createKatana3D } from './katana3d.js';
 import { createTrail } from './trail3d.js';
@@ -11,21 +12,31 @@ const FEET_AT_MAX = 0.72, FEET_AT_MIN = 0.58;   // where the feet sit (fraction 
 const SOLE = 0.04;         // soles sit below the ankle bones (fraction of body height)
 
 export async function createNinjaStage({ canvas, onProgress }) {
+  const V3 = new URLSearchParams(location.search).get('ninja') !== 'old';   // the chibi ninja; ?ninja=old brings back the previous one
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMapping = V3 ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
 
   const scene = new THREE.Scene();
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x3a2024, 1.6));
-  const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(2.5, 4, 5); scene.add(key);
-  const rim = new THREE.DirectionalLight(0xff2a36, 3.0); rim.position.set(-4, 2, -3); scene.add(rim);
+  if (V3) {   // same soft studio light as the hero's chibi ninja
+    const pm = new THREE.PMREMGenerator(renderer);
+    scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 1.0;
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 0.5));
+    const key = new THREE.DirectionalLight(0xffffff, 1.0); key.position.set(2.5, 4, 5); scene.add(key);
+    const rim = new THREE.DirectionalLight(0xff4a52, 0.8); rim.position.set(-4, 2, -3); scene.add(rim);
+  } else {
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x3a2024, 1.6));
+    const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(2.5, 4, 5); scene.add(key);
+    const rim = new THREE.DirectionalLight(0xff2a36, 3.0); rim.position.set(-4, 2, -3); scene.add(rim);
+  }
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 200);
 
-  const gltf = await loadModel({ embedded: window.__LOADER_GLB__, url: 'assets/loader/ninja-loader.glb' });
+  const gltf = await loadModel({ embedded: window.__LOADER_GLB__, url: V3 ? 'assets/loader-v3/ninja-loader.glb' : 'assets/loader/ninja-loader.glb' });
   onProgress?.('model');
-  const TEX = window.__LOADER_TEX__ || { base: 'assets/loader/tex-base.webp', normal: 'assets/loader/tex-normal.webp', mr: 'assets/loader/tex-mr.webp' };
+  const LD = V3 ? 'assets/loader-v3/' : 'assets/loader/';
+  const TEX = window.__LOADER_TEX__ || { base: LD + 'tex-base.webp', normal: LD + 'tex-normal.webp', mr: LD + 'tex-mr.webp' };
   const textures = await loadTextures(TEX, (k) => onProgress?.('tex:' + k));
   applyTextures(gltf.scene, textures);
 
@@ -60,10 +71,21 @@ export async function createNinjaStage({ canvas, onProgress }) {
   shadow.position.set(0, floor + SHADOW_UP, cz); scene.add(shadow);
 
   const handBone = bones.find((b) => /RightHand$/.test(b.name));
-  const katana = createKatana3D({ scene, handBone, H });
+  const katana = createKatana3D({ scene, handBone, H, size: V3 ? 0.72 : 1, polished: V3, backBone: V3 ? bones.find((b) => /Hips$/.test(b.name)) : null });   // the chibi ninja carries a smaller, polished sword, sheathed in his belt until it is drawn
   const trail = createTrail({ scene, H });
   let skinned = null; model.traverse((o) => { if (o.isSkinnedMesh) skinned = o; });
   const gripMorph = createGripMorph(skinned, handBone);                // closes the fingers around the handle
+  // the chibi hand's four fingers are part of the hand mesh (only the thumb has bones), so they are curled with the morph, in metres
+  if (V3) gripMorph.build({ y0: 0.12, length: 0.1, angle: 3.3, fold: new THREE.Vector3(-1, 0, 0) });
+  // the chibi hand is not a mirror image of the old one: the blade lies across the palm toward the thumb side, and the handle sits in the middle of the curled fingers
+  if (V3) katana.setGrip({ pos: [gripMorph.loop.x / H, gripMorph.loop.y / H, gripMorph.loop.z / H], euler: [60 * Math.PI / 180, 0, Math.PI / 2] });   // handle at the centre of the fist, blade toward the thumb side
+  // the chibi rig has real finger bones: curl them (thumb and the four-finger chain) when the sword is gripped
+  const fingers = V3 ? bones.filter((b) => /RightHandThumb[123]$/.test(b.name)).map((b) => ({ b, rest: b.quaternion.clone(), idx: +b.name.slice(-1) - 1 })) : [];
+  const fq = new THREE.Quaternion(), fAxis = new THREE.Vector3();
+  const curlFingers = (k) => {
+    const ax = [1, 0, 0], ang = [0.7, 0.5, 0.3];
+    fingers.forEach((f) => { fAxis.set(ax[0], ax[1], ax[2]); fq.setFromAxisAngle(fAxis, ang[+f.idx] * k); f.b.quaternion.copy(f.rest).multiply(fq); });
+  };
   // The slash is performed by the arm itself: the swing angle is shared between shoulder, elbow and wrist (each turning
   // about its own joint, in the screen plane), so the hand carries the sword instead of the sword spinning on its own.
   const armChain = [handBone.parent?.parent, handBone.parent, handBone].filter(Boolean);
@@ -155,6 +177,7 @@ export async function createNinjaStage({ canvas, onProgress }) {
       bodyAction(p.twist, p.lean);                              // torso first, then the arm on top of it
       swingArm(katana.K.swing);                                 // arm, wrist and hand turn through the slash
       gripMorph.influence = katana.K.grip;                      // the fingers close as the sword is drawn
+      if (fingers.length) curlFingers(katana.K.grip);
       const blade = katana.update();
       trail.update(dt, blade, p.trail ?? 1);
     },

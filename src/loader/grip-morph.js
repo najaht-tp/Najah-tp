@@ -27,12 +27,15 @@ export function createGripMorph(skinnedMesh, handBone) {
 
   // build({ y0, length, angle, fold }): hinge at y0 (cm along the hand's +Y), bend the fingers over `length` cm by `angle`
   // radians toward the `fold` direction (a unit vector perpendicular to +Y in the hand's frame)
+  const loop = { x: 0, y: 0, z: 0 };   // centre of the curl, in the hand bone's frame (set by build)
   const build = ({ y0 = 13, length = 9, angle = 1.75, fold = new THREE.Vector3(0, 0, -1) } = {}) => {
     const Yh = new THREE.Vector3(0, 1, 0), d = fold.clone().normalize(), A = new THREE.Vector3().crossVectors(Yh, d).normalize();
     let q0 = 0, n = 0;
-    for (const p of loc) if (p.y > y0 + 3) { q0 += p.dot(d); n++; }
+    for (const p of loc) if (p.y > y0 + length * 0.33) { q0 += p.dot(d); n++; }
     q0 = n ? q0 / n : 0;                                                      // the fingers' centre line along the fold direction
     const kappa = angle / length, r = 1 / kappa;
+    loop.x = d.x * (q0 + r); loop.y = y0; loop.z = d.z * (q0 + r);       // centre of the finger arc (the middle of the fist)
+    loop.r = r;
     const out = geo.morphAttributes.position[0].array; out.fill(0);
     const q = new THREE.Vector3(), moved = new THREE.Vector3(), orig = new THREE.Vector3();
     for (let j = 0; j < idx.length; j++) {
@@ -53,5 +56,5 @@ export function createGripMorph(skinnedMesh, handBone) {
   };
   build();
 
-  return { build, set influence(v) { skinnedMesh.morphTargetInfluences[0] = v; }, get influence() { return skinnedMesh.morphTargetInfluences[0]; } };
+  return { build, loop, set influence(v) { skinnedMesh.morphTargetInfluences[0] = v; }, get influence() { return skinnedMesh.morphTargetInfluences[0]; } };
 }

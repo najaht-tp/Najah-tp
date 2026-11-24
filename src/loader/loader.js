@@ -206,12 +206,12 @@ export async function createLoader({ progress, reduce, onReveal }) {
 
   // the katana is drawn out of the guard with a roll and a glint; from then on it is simply held by the hand
   tl.call(() => sfx()?.shing?.(), null, tDraw);                            // metallic draw
-  tl.set(K, { visible: 1, reveal: 0.001, roll: -1.3, glint: 1, scale: 0.92 }, tDraw);
+  tl.set(K, { visible: 1, reveal: 0.001, roll: -1.3, glint: 1, scale: 0.92, sheathed: 0 }, tDraw);   // the hilt at his hip lets go as the blade appears in his hand
   tl.to(K, { reveal: 1, duration: 0.22, ease: 'power3.out' }, tDraw);
   tl.to(K, { roll: 0, scale: 1, duration: 0.4, ease: 'power3.out' }, tDraw);
   tl.to(K, { glint: 0, duration: 0.6, ease: 'power2.out' }, tDraw + 0.08);
   // the fingers close around the handle just as the blade appears, and stay closed for the rest of the scene
-  tl.set(K, { grip: 0 }, 0);
+  tl.set(K, { grip: 0, sheathed: 1 }, 0);
   tl.to(K, { grip: 1, duration: 0.18, ease: 'power2.out' }, tDraw - 0.08);
 
   // percentage pacing

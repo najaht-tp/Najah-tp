@@ -8,10 +8,10 @@ const rd = p => fs.readFileSync(R + '/' + p);
 html = html.replace('<link rel="stylesheet" href="src/loader/loader.css">', () => '<style>' + rd('src/loader/loader.css').toString() + '</style>');
 
 // optimised raster assets
-const standing = await sharp(rd('assets/ninja-still.webp')).resize({ height: 1000 }).webp({ quality: 88, alphaQuality: 95 }).toBuffer();
+const standing = await sharp(rd('assets/hero-v3/ninja-still.webp')).resize({ height: 1000 }).webp({ quality: 88, alphaQuality: 95 }).toBuffer();
 const avatar   = await sharp(rd('assets/avatar.png')).resize(160, 160, { fit: 'cover' }).webp({ quality: 85 }).toBuffer();
 const uri = {
-  'assets/ninja-still.webp': b64(standing, 'image/webp'),
+  'assets/hero-v3/ninja-still.webp': b64(standing, 'image/webp'),
   'assets/avatar.png': b64(avatar, 'image/webp'),
   'assets/shimmer-texture.webp': b64(rd('assets/shimmer-texture.webp'), 'image/webp'),
   'assets/cursor-sword.png': b64(rd('assets/cursor-sword.png'), 'image/png'),
@@ -46,10 +46,10 @@ const out = await build({
   bundle: true, minify: true, format: 'iife', write: false, target: 'es2020',
   alias: { 'three/addons': NM + '/three/examples/jsm' },
 });
-const glb = rd('assets/ninja-clap.min.glb').toString('base64');
-const tex = JSON.stringify({ base: b64(rd('assets/tex-base.webp'),'image/webp'), normal: b64(rd('assets/tex-normal.webp'),'image/webp'), mr: b64(rd('assets/tex-mr.webp'),'image/webp') });
-const lglb = rd('assets/loader/ninja-loader.glb').toString('base64');
-const ltex = JSON.stringify({ base: b64(rd('assets/loader/tex-base.webp'),'image/webp'), normal: b64(rd('assets/loader/tex-normal.webp'),'image/webp'), mr: b64(rd('assets/loader/tex-mr.webp'),'image/webp') });
+const glb = rd('assets/hero-v3/ninja.glb').toString('base64');
+const tex = JSON.stringify({ base: b64(rd('assets/hero-v3/tex-base.webp'),'image/webp'), normal: b64(rd('assets/hero-v3/tex-normal.webp'),'image/webp'), mr: b64(rd('assets/hero-v3/tex-mr.webp'),'image/webp') });
+const lglb = rd('assets/loader-v3/ninja-loader.glb').toString('base64');
+const ltex = JSON.stringify({ base: b64(rd('assets/loader-v3/tex-base.webp'),'image/webp'), normal: b64(rd('assets/loader-v3/tex-normal.webp'),'image/webp'), mr: b64(rd('assets/loader-v3/tex-mr.webp'),'image/webp') });
 // the ninja game (loaded only when a visitor presses Play game, but embedded so the single file works offline)
 const gglb = fs.existsSync(R + '/assets/game/ninja-game.glb') ? rd('assets/game/ninja-game.glb').toString('base64') : '';
 const kglb = fs.existsSync(R + '/assets/game/katana.glb') ? rd('assets/game/katana.glb').toString('base64') : '';
