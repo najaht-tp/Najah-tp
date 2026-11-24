@@ -11,6 +11,8 @@ const DANCE  = 'All_Night_Dance'; // then blends into this one, plays through on
 const CLAP_UNTIL = 5.5;          // clip time (s) at which the gesture hands over to the dance
 // chibi ninja, in this order, over and over: dive down from the sky and land, a Hip Hop dance, a jog on the spot, a flying-kick fight, then the dive again
 const FIGHT_RATE = 1, FIGHT_IN = 0.5;
+const CYCLE_REST = 30;   // after the whole cycle (dive, dance, run, fight) he stands steady for 30 s before it starts again
+const WIND_X0 = 0.3, WIND_X1 = 0.62;   // hood tails: model-space x where the wave starts / reaches full strength
 const REST_HOLD = 2.4, REST_BLEND = 0.9, REST_AT = 0;   // the rest pose is the model's default stance (frame 0 of Rest_Pose), held with a soft breathing sway   // after every move he settles into a standing pose, waits REST_HOLD seconds, then the next move starts
 const RUN_FOR = 4, RUN_RATE = 0.75, DANCE_RATE = 0.85, DIVE_RATE = 1, SOFT = 1.5, DIVE_IN = 0.35;   // seconds / playback speeds / blend lengths
 const REST_FOR = 3;              // after the dance the ninja settles into a standing pose and holds it this long (s), then the whole sequence restarts
@@ -92,10 +94,45 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
   const model = gltf.scene;
   scene.add(model);
   // the right hand closes into a fist for the salute (the same finger-curl the intro uses on the katana hand); its strength follows the salute pose's blend weight
-  let fist = null;
+  // The finger curl is a morph. Blending straight from open to fully closed would shrink the fingers through the middle (it looks cropped),
+  // so each hand has three morph shapes along the curl (1/3, 2/3, full) and the blend walks through them: the fingers swing round on an arc.
+  let fists = [];
+  const setFists = (t) => { const x = Math.max(0, Math.min(1, t)) * 3; for (const hand of fists) hand.forEach((m, k) => { m.influence = Math.max(0, 1 - Math.abs(x - (k + 1))); }); };
   if (V3) {
-    let sk = null, hb = null; model.traverse((o) => { if (o.isSkinnedMesh) sk = o; if (o.isBone && /RightHand$/.test(o.name)) hb = o; });
-    if (sk && hb) { fist = createGripMorph(sk, hb); fist.build({ y0: 0.12, length: 0.1, angle: 3.3, fold: new THREE.Vector3(-1, 0, 0) }); }
+    let sk = null, hb = null, hl = null; model.traverse((o) => { if (o.isSkinnedMesh) sk = o; if (o.isBone && /RightHand$/.test(o.name)) hb = o; if (o.isBone && /LeftHand$/.test(o.name)) hl = o; });
+    for (const [bone, fx] of [[hb, -0.6], [hl, 0.6]]) {
+      if (!sk || !bone) continue;
+      fists.push([1, 2, 3].map((k) => { const m = createGripMorph(sk, bone); m.build({ y0: 0.11, length: 0.1, angle: 4.2 * k / 3, fold: new THREE.Vector3(fx, 0, 0.8) }); return m; }));
+    }
+  }
+  // Wind on the two hood tails that stick out at the side of the head: only those vertices get a travelling wave (no cloth bones exist,
+  // so it is done in the vertex shader before skinning: the waving rides along with the head). Zero at the head, strongest at the tips.
+  const windU = { value: 0 }, windA = { value: 0 };   // time, and how much wave (only while he stands steady)
+  if (V3) {
+    let sk = null; model.traverse((o) => { if (o.isSkinnedMesh) sk = o; });
+    const head = sk ? sk.skeleton.bones.findIndex((b) => /Head$/.test(b.name)) : -1;
+    if (sk && head >= 0 && !Array.isArray(sk.material)) {
+      const g = sk.geometry, pos = g.attributes.position, si = g.attributes.skinIndex, sw = g.attributes.skinWeight, wave = new Float32Array(pos.count);
+      for (let i = 0; i < pos.count; i++) {
+        let w = 0; for (let k = 0; k < 4; k++) if (si.getComponent(i, k) === head) w += sw.getComponent(i, k);
+        const x = pos.getX(i), t = Math.min(1, Math.max(0, (x - WIND_X0) / (WIND_X1 - WIND_X0)));
+        wave[i] = w > 0.5 ? t * t * (3 - 2 * t) : 0;
+      }
+      g.setAttribute('aWave', new THREE.BufferAttribute(wave, 1));
+      const mat = sk.material;
+      mat.onBeforeCompile = (sh) => {
+        sh.uniforms.uWind = windU; sh.uniforms.uAmp = windA;
+        sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float aWave; uniform float uWind; uniform float uAmp;')
+          .replace('#include <begin_vertex>', `#include <begin_vertex>
+            { float aw = aWave * uAmp; float ph = uWind * 4.2 - position.x * 11.0 + position.y * 5.0;
+              float f = sin(ph) + 0.45 * sin(ph * 2.3 + 1.7);
+              transformed.y += aw * f * 0.035;
+              transformed.z += aw * (cos(ph * 0.9 + 0.6) + 0.4 * sin(ph * 2.0)) * 0.05;
+              transformed.x -= aw * (f * f) * 0.006; }`);
+      };
+      mat.customProgramCacheKey = () => 'hoodwind';
+      mat.needsUpdate = true;
+    }
   }
   const clip = THREE.AnimationClip.findByName(gltf.animations, V3 ? 'Running' : CLIP);
   const danceClip = THREE.AnimationClip.findByName(gltf.animations, V3 ? 'Hip_Hop_Dance' : DANCE);
@@ -161,7 +198,7 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
 
   // start state: gesture clip from t = 0 (this is also the still we show before the model loads)
   if (V3) {   // the floor level for the shadow comes from the standing pose; the show then starts with him still up in the sky, above the frame
-    standAct.reset().play(); mixer.setTime(0); updateShadow(); standAct.stop();
+    standAct.reset().play(); mixer.setTime(0); updateShadow(); standAct.stop(); standAct.setEffectiveWeight(0);
     diveAct.reset().play(); mixer.setTime(0);
     if (reduce) { diveAct.stop(); standAct.reset().play(); mixer.setTime(0); }   // reduced motion: a still standing pose
   } else {
@@ -179,12 +216,12 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
   // back to the standing pose (frame 0 of the gesture clip), held still while paused, then the sequence restarts
   let toRun = null;
   let toStand = () => { if (V3) { runT = 0; clapAct.reset().play(); clapAct.setEffectiveWeight(0); startFade(danceAct, clapAct, FADE_TO_DANCE, 'clap'); return; } clapAct.reset().play(); clapAct.time = 0; clapAct.paused = true; clapAct.setEffectiveWeight(0); startFade(danceAct, clapAct, FADE_TO_STAND, 'rest'); };
-  let toDive = null, toFight = null, toRest = null, restGo = null;
+  let toDive = null, toFight = null, toRest = null, restGo = null, restHold = REST_HOLD;
   if (V3) {
     // every move starts from the standing pose and ends back in it (the standing pose is frame 0 of the gesture clip)
     // the pauses alternate: fist-and-palm salute, steady, salute, steady
     const REST_ORDER = [standAct]; let restI = 0, restAct = standAct, restNext = null;
-    toRest = (from, next) => { restNext = next; restT = 0; restAct = REST_ORDER[restI++ % REST_ORDER.length]; restAct.reset().play(); restAct.time = REST_AT; restAct.paused = true; restAct.setEffectiveWeight(0); startFade(from, restAct, REST_BLEND, 'rest'); };
+    toRest = (from, next) => { restNext = next; restHold = next === toDive ? CYCLE_REST : REST_HOLD; restT = 0; restAct = REST_ORDER[restI++ % REST_ORDER.length]; restAct.reset().play(); restAct.time = REST_AT; restAct.paused = true; restAct.setEffectiveWeight(0); startFade(from, restAct, REST_BLEND, 'rest'); };
     toDance = () => { danceT = 0; danceAct.reset().play(); danceAct.timeScale = DANCE_RATE; danceAct.setEffectiveWeight(0); startFade(restAct, danceAct, 0.8, 'dance'); };
     toRun = () => { runT = 0; clapAct.reset().play(); clapAct.timeScale = RUN_RATE; clapAct.setEffectiveWeight(0); startFade(restAct, clapAct, 0.8, 'clap'); };
     toFight = () => { fightT = 0; fightAct.reset().play(); fightAct.timeScale = FIGHT_RATE; fightAct.setEffectiveWeight(0); startFade(restAct, fightAct, FIGHT_IN, 'fight'); };
@@ -205,8 +242,9 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
       if (k >= 1) { fade.from.enabled = false; fade.to.setEffectiveWeight(1); fade = null; restT = 0; }
     }
     mixer.update(dt);
-    if (fist && foldAct) fist.influence = 0;
+    { const fw = standAct ? standAct.getEffectiveWeight() : 0; setFists(fw); }
     if (V3) {   // a slow breath while he waits: a hair of chest rise and fall, eased in and out so it never pops
+      windU.value += dt; windA.value = breathW;
       breathT += dt; breathW += (((phase === 'rest' && !fade) ? 1 : 0) - breathW) * Math.min(1, dt * 2.5);
       model.scale.y = 1 + breathW * 0.009 * Math.sin(breathT * 2.1); model.scale.x = model.scale.z = 1 - breathW * 0.004 * Math.sin(breathT * 2.1);
     }
@@ -218,7 +256,7 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
         else if (phase === 'dance' && (danceT += dt) >= danceClip.duration / DANCE_RATE - REST_BLEND) toRest(danceAct, toRun);
         else if (phase === 'clap' && (runT += dt) >= RUN_FOR) toRest(clapAct, toFight);
         else if (phase === 'fight' && (fightT += dt) >= fightClip.duration / FIGHT_RATE - REST_BLEND) toRest(fightAct, toDive);
-        else if (phase === 'rest' && (restT += dt) >= REST_HOLD) restGo();
+        else if (phase === 'rest' && (restT += dt) >= restHold) restGo();
       }
       else if (phase === 'clap' && clapAct.time >= CLAP_UNTIL) toDance();
       else if (phase === 'dance' && danceAct.time >= danceClip.duration - FADE_TO_STAND) toStand();
@@ -228,7 +266,7 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
       }
     }
   };
-  if (location.hash === '#debug') window.__ninjaDebug = { scene, step, model, mixer, clapAct, danceAct, get framing() { return framing; }, camera, get phase() { return phase; } };
+  if (location.hash === '#debug') window.__ninjaDebug = { setFists, windA, V3: THREE.Vector3, scene, step, model, mixer, clapAct, danceAct, get framing() { return framing; }, camera, get phase() { return phase; } };
 
   // One-off GPU work (texture upload, shader compile) in idle slices, so it never stalls the loader's animation
   for (const t of Object.values(textures)) { await idle(); renderer.initTexture(t); }

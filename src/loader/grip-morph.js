@@ -20,10 +20,11 @@ export function createGripMorph(skinnedMesh, handBone) {
   }
 
   const base = new Float32Array(pos.count * 3);
-  geo.morphAttributes.position = [new THREE.BufferAttribute(base, 3)];
+  const slot = (geo.morphAttributes.position || []).length;   // a second hand on the same mesh gets its own morph slot
+  geo.morphAttributes.position = [...(geo.morphAttributes.position || []), new THREE.BufferAttribute(base, 3)];
   geo.morphTargetsRelative = true;
   skinnedMesh.updateMorphTargets();
-  skinnedMesh.morphTargetInfluences[0] = 0;
+  skinnedMesh.morphTargetInfluences[slot] = 0;
 
   // build({ y0, length, angle, fold }): hinge at y0 (cm along the hand's +Y), bend the fingers over `length` cm by `angle`
   // radians toward the `fold` direction (a unit vector perpendicular to +Y in the hand's frame)
@@ -36,7 +37,7 @@ export function createGripMorph(skinnedMesh, handBone) {
     const kappa = angle / length, r = 1 / kappa;
     loop.x = d.x * (q0 + r); loop.y = y0; loop.z = d.z * (q0 + r);       // centre of the finger arc (the middle of the fist)
     loop.r = r;
-    const out = geo.morphAttributes.position[0].array; out.fill(0);
+    const out = geo.morphAttributes.position[slot].array; out.fill(0);
     const q = new THREE.Vector3(), moved = new THREE.Vector3(), orig = new THREE.Vector3();
     for (let j = 0; j < idx.length; j++) {
       const p = loc[j], s = p.y - y0;
@@ -51,10 +52,10 @@ export function createGripMorph(skinnedMesh, handBone) {
       const w = Math.min(1, wts[j]);
       out[idx[j] * 3] = (moved.x - orig.x) * w; out[idx[j] * 3 + 1] = (moved.y - orig.y) * w; out[idx[j] * 3 + 2] = (moved.z - orig.z) * w;
     }
-    geo.morphAttributes.position[0].needsUpdate = true;
+    geo.morphAttributes.position[slot].needsUpdate = true;
     geo.dispose();   // three bakes morph targets into a texture once; dropping the GPU copy makes it re-upload the new shape
   };
   build();
 
-  return { build, loop, set influence(v) { skinnedMesh.morphTargetInfluences[0] = v; }, get influence() { return skinnedMesh.morphTargetInfluences[0]; } };
+  return { build, loop, set influence(v) { skinnedMesh.morphTargetInfluences[slot] = v; }, get influence() { return skinnedMesh.morphTargetInfluences[slot]; } };
 }
