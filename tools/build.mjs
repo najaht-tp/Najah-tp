@@ -47,9 +47,9 @@ const out = await build({
   alias: { 'three/addons': NM + '/three/examples/jsm' },
 });
 const glb = rd('assets/hero-v3/ninja-loop.glb').toString('base64');
-const tex = JSON.stringify({ base: b64(rd('assets/hero-v3/tex-base.webp'),'image/webp'), normal: b64(rd('assets/hero-v3/tex-normal.webp'),'image/webp'), mr: b64(rd('assets/hero-v3/tex-mr.webp'),'image/webp') });
+const tex = JSON.stringify({ base: b64(rd('assets/hero-v3/tex-red.webp'),'image/webp'), normal: b64(rd('assets/hero-v3/tex-normal.webp'),'image/webp'), mr: b64(rd('assets/hero-v3/tex-mr.webp'),'image/webp') });
 const lglb = rd('assets/loader-v3/ninja-loader.glb').toString('base64');
-const ltex = JSON.stringify({ base: b64(rd('assets/loader-v3/tex-base.webp'),'image/webp'), normal: b64(rd('assets/loader-v3/tex-normal.webp'),'image/webp'), mr: b64(rd('assets/loader-v3/tex-mr.webp'),'image/webp') });
+const ltex = JSON.stringify({ base: b64(rd('assets/loader-v3/tex-red.webp'),'image/webp'), normal: b64(rd('assets/loader-v3/tex-normal.webp'),'image/webp'), mr: b64(rd('assets/loader-v3/tex-mr.webp'),'image/webp') });
 // the ninja game (loaded only when a visitor presses Play game, but embedded so the single file works offline)
 const gglb = fs.existsSync(R + '/assets/game/ninja-chibi.glb') ? rd('assets/game/ninja-chibi.glb').toString('base64') : '';
 const kglb = fs.existsSync(R + '/assets/game/katana.glb') ? rd('assets/game/katana.glb').toString('base64') : '';

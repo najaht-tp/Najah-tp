@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Najah — Designer</title>
-<link rel="modulepreload" href="js/main-UUXS5UHD.js">
+<link rel="modulepreload" href="js/main-JDIFV5SK.js">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -224,6 +224,9 @@ a { color: inherit; }
   .ninja.is-dragging .ninja__tilt { cursor: grabbing; }
 }
 .ninja__stage { position: relative; width: 100%; height: 100%; opacity: 0; transform: translateY(40px) scale(.97); animation: ninja-in 1.1s var(--ease-out) .15s forwards; }
+/* a soft dark halo behind him, so he lifts off the red glow and the page and draws the eye (a plain gradient: nothing extra to render) */
+.ninja__stage::before { content: ""; position: absolute; z-index: -1; pointer-events: none; inset: -6% -26% -2%;
+  background: radial-gradient(ellipse 50% 50% at 50% 54%, rgba(2, 4, 9, .6) 0%, rgba(2, 4, 9, .38) 38%, rgba(2, 4, 9, .12) 62%, transparent 78%); }
 .ninja__still, .ninja__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .ninja__still { object-fit: contain; transition: opacity .5s ease; }
 .ninja__canvas { opacity: 0; transition: opacity .5s ease; }
@@ -1598,7 +1601,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
       </form>
       <a class="lock__request" href="mailto:najahuiux@gmail.com?subject=Access%20request%3A%20Sony%20LIV&amp;body=Hi%20Najah%2C%0A%0ACould%20I%20have%20access%20to%20the%20Sony%20LIV%20case%20study%3F%0A%0A">Request access <span aria-hidden="true">↗</span></a>
     </div>
-    <script type="application/json" data-lock-payload data-src="locked/sony-live.923d1f2a00.json"></script>
+    <script type="application/json" data-lock-payload data-src="locked/sony-live.19de7d6bc8.json"></script>
   </article>
   <article class="case__in" id="case-generic">
     <header>
@@ -2389,6 +2392,6 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
   document.addEventListener('mouseleave', () => { on = false; dot.classList.remove('is-on'); ring.classList.remove('is-on'); });
 })();
 </script>
-<script type="module" src="js/main-UUXS5UHD.js"></script>
+<script type="module" src="js/main-JDIFV5SK.js"></script>
 </body>
 </html>

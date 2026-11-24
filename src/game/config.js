@@ -8,7 +8,7 @@ export const ASSETS = {
   ninja: { url: 'assets/game/ninja-chibi.glb', embedded: () => window.__GAME_GLB__ },
   // the ninja's colour / normal / metal-rough maps (shared with the loader ninja)
   ninjaTextures: {
-    urls: { base: 'assets/hero-v3/tex-base.webp', normal: 'assets/hero-v3/tex-normal.webp', mr: 'assets/hero-v3/tex-mr.webp' },
+    urls: { base: 'assets/hero-v3/tex-red.webp', normal: 'assets/hero-v3/tex-normal.webp', mr: 'assets/hero-v3/tex-mr.webp' },
     embedded: () => window.__NINJA_TEX__,
   },
   // the painted backdrop behind the level (sky, sun, mountains, temples)

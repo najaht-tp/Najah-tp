@@ -176,6 +176,9 @@ a { color: inherit; }
   .ninja.is-dragging .ninja__tilt { cursor: grabbing; }
 }
 .ninja__stage { position: relative; width: 100%; height: 100%; opacity: 0; transform: translateY(40px) scale(.97); animation: ninja-in 1.1s var(--ease-out) .15s forwards; }
+/* a soft dark halo behind him, so he lifts off the red glow and the page and draws the eye (a plain gradient: nothing extra to render) */
+.ninja__stage::before { content: ""; position: absolute; z-index: -1; pointer-events: none; inset: -6% -26% -2%;
+  background: radial-gradient(ellipse 50% 50% at 50% 54%, rgba(2, 4, 9, .6) 0%, rgba(2, 4, 9, .38) 38%, rgba(2, 4, 9, .12) 62%, transparent 78%); }
 .ninja__still, .ninja__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .ninja__still { object-fit: contain; transition: opacity .5s ease; }
 .ninja__canvas { opacity: 0; transition: opacity .5s ease; }

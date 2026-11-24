@@ -33,10 +33,10 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
   const scene = new THREE.Scene();
   if (V3) {   // the chibi ninja is lit like a soft studio: even, light and flat, with only a faint rim
     const pm = new THREE.PMREMGenerator(renderer);
-    scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 1.0;
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 0.5));
+    scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.5;
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 0.35));
     const key = new THREE.DirectionalLight(0xffffff, 1.0); key.position.set(2.5, 4, 5); scene.add(key);
-    const rim = new THREE.DirectionalLight(0xff4a52, 0.6); rim.position.set(-4, 2, -3); scene.add(rim);
+    const rim = new THREE.DirectionalLight(0xff1a24, 0.6); rim.position.set(-4, 2, -3); scene.add(rim);
   } else {
     scene.add(new THREE.HemisphereLight(0xffffff, 0x3a2024, 1.7));
     const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(2.5, 4, 5); scene.add(key);
@@ -72,7 +72,7 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
   new ResizeObserver(fit).observe(canvas);
 
   const DIR = V3 ? 'assets/hero-v3/' : 'assets/';
-  const TEX = window.__NINJA_TEX__ || { base: DIR + 'tex-base.webp', normal: DIR + 'tex-normal.webp', mr: DIR + 'tex-mr.webp' };
+  const TEX = window.__NINJA_TEX__ || { base: DIR + (V3 ? 'tex-red.webp' : 'tex-base.webp'), normal: DIR + 'tex-normal.webp', mr: DIR + 'tex-mr.webp' };
   let gltf, textures;
   try {
     gltf = await loadModel({ embedded: window.__NINJA_GLB__, url: V3 ? DIR + 'ninja-loop.glb' : 'assets/ninja-clap.min.glb' });
@@ -208,7 +208,7 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
       }
     }
   };
-  if (location.hash === '#debug') window.__ninjaDebug = { step, model, mixer, clapAct, danceAct, get framing() { return framing; }, camera, get phase() { return phase; } };
+  if (location.hash === '#debug') window.__ninjaDebug = { scene, step, model, mixer, clapAct, danceAct, get framing() { return framing; }, camera, get phase() { return phase; } };
 
   // One-off GPU work (texture upload, shader compile) in idle slices, so it never stalls the loader's animation
   for (const t of Object.values(textures)) { await idle(); renderer.initTexture(t); }

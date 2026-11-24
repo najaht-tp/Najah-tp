@@ -22,10 +22,10 @@ export async function createNinjaStage({ canvas, onProgress }) {
   const scene = new THREE.Scene();
   if (V3) {   // same soft studio light as the hero's chibi ninja
     const pm = new THREE.PMREMGenerator(renderer);
-    scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 1.0;
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 0.5));
+    scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.5;
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 0.35));
     const key = new THREE.DirectionalLight(0xffffff, 1.0); key.position.set(2.5, 4, 5); scene.add(key);
-    const rim = new THREE.DirectionalLight(0xff4a52, 0.8); rim.position.set(-4, 2, -3); scene.add(rim);
+    const rim = new THREE.DirectionalLight(0xff1a24, 0.8); rim.position.set(-4, 2, -3); scene.add(rim);
   } else {
     scene.add(new THREE.HemisphereLight(0xffffff, 0x3a2024, 1.6));
     const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(2.5, 4, 5); scene.add(key);
@@ -36,7 +36,7 @@ export async function createNinjaStage({ canvas, onProgress }) {
   const gltf = await loadModel({ embedded: window.__LOADER_GLB__, url: V3 ? 'assets/loader-v3/ninja-loader.glb' : 'assets/loader/ninja-loader.glb' });
   onProgress?.('model');
   const LD = V3 ? 'assets/loader-v3/' : 'assets/loader/';
-  const TEX = window.__LOADER_TEX__ || { base: LD + 'tex-base.webp', normal: LD + 'tex-normal.webp', mr: LD + 'tex-mr.webp' };
+  const TEX = window.__LOADER_TEX__ || { base: LD + (V3 ? 'tex-red.webp' : 'tex-base.webp'), normal: LD + 'tex-normal.webp', mr: LD + 'tex-mr.webp' };
   const textures = await loadTextures(TEX, (k) => onProgress?.('tex:' + k));
   applyTextures(gltf.scene, textures);
 
