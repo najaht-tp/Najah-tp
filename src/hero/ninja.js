@@ -45,6 +45,8 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
     scene.add(new THREE.HemisphereLight(0xffffff, 0x3a2024, 1.7));
     const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(2.5, 4, 5); scene.add(key);
     const rim = new THREE.DirectionalLight(0xff2a36, 2.6); rim.position.set(-4, 2, -3); scene.add(rim);
+    const rim2 = new THREE.DirectionalLight(0xffd9dc, 2.4); rim2.position.set(4, 2.5, -3.5); scene.add(rim2);   // a soft light edge on the other side: the silhouette lifts off the dark page on both sides
+    const kick = new THREE.DirectionalLight(0xff4a55, 1.2); kick.position.set(0, 5, -4); scene.add(kick);
   }
 
   const camera = new THREE.PerspectiveCamera(28, 4 / 5, 0.01, 50);
@@ -209,6 +211,12 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
   if (danceAct) { if (V3) danceAct.setLoop(THREE.LoopRepeat, Infinity); else { danceAct.setLoop(THREE.LoopOnce, 1); danceAct.clampWhenFinished = true; } }
 
   // Blends are driven by hand with an ease-in-out curve (smootherstep) so neither clip lurches in or out.
+  const breathQ = new THREE.Quaternion(), breathBones = [];   // [{bone, axis}, angle in radians at full breath-in]
+  if (V3) {
+    const find = (re) => { let f = null; model.traverse((o) => { if (o.isBone && re.test(o.name)) f = o; }); return f; };
+    const X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
+    for (const [re, ax, k] of [[/Spine$/, X, -0.016], [/Spine1$/, X, -0.025], [/Spine2$/, X, -0.032], [/Neck$/, X, 0.030], [/Head$/, X, 0.022]]) { const b = find(re); if (b) breathBones.push([{ bone: b, axis: ax, pre: new THREE.Quaternion(), last: new THREE.Quaternion() }, k]); }
+  }
   let phase = V3 ? 'dive' : 'clap', fade = null, restT = 0, runT = 0, danceT = 0, diveT = 0, fightT = 0, breathT = 0, breathW = 0;
   const ease = (x) => x * x * x * (x * (x * 6 - 15) + 10);
   const startFade = (from, to, dur, toPhase) => { to.enabled = true; to.setEffectiveWeight(0); fade = { from, to, dur, t: 0 }; phase = toPhase; };
@@ -241,12 +249,18 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
       fade.from.setEffectiveWeight(1 - w);
       if (k >= 1) { fade.from.enabled = false; fade.to.setEffectiveWeight(1); fade = null; restT = 0; }
     }
+    for (const [b] of breathBones) b.pre.copy(b.bone.quaternion);   // to tell whether the mixer rewrote the bone (a held pose is not rewritten)
     mixer.update(dt);
     { const fw = standAct ? standAct.getEffectiveWeight() : 0; setFists(fw); }
     if (V3) {   // a slow breath while he waits: a hair of chest rise and fall, eased in and out so it never pops
       windU.value += dt; windA.value = breathW;
       breathT += dt; breathW += (((phase === 'rest' && !fade) ? 1 : 0) - breathW) * Math.min(1, dt * 2.5);
-      model.scale.y = 1 + breathW * 0.009 * Math.sin(breathT * 2.1); model.scale.x = model.scale.z = 1 - breathW * 0.004 * Math.sin(breathT * 2.1);
+      // breathing, as a person does it: the ribcage lifts and the spine arches back a touch on the way in, the shoulders rise a hair and the head
+      // stays level; out is a little slower than in, with a short stillness at the end of each. Bones only: the body is never scaled.
+      { const cyc = 4.6, ph = (breathT % cyc) / cyc, IN = 0.42;
+        const v = ph < IN ? 0.5 - 0.5 * Math.cos(Math.PI * ph / IN) : 0.5 + 0.5 * Math.cos(Math.PI * (ph - IN) / (1 - IN));   // 0 -> 1 -> 0
+        const a = v * breathW;
+        for (const [b, k] of breathBones) { if (b.bone.quaternion.equals(b.pre)) b.bone.quaternion.multiply(b.last.invert()); breathQ.setFromAxisAngle(b.axis, a * k); b.bone.quaternion.multiply(breathQ); b.last.copy(breathQ); } }
     }
     if (V3) { const dw = diveAct.getEffectiveWeight(); model.position.y = fallExtra && dw > 0 ? fallExtra * dw * Math.pow(Math.max(0, 1 - diveAct.time / 0.8), 1.4) : 0; model.updateMatrixWorld(true); }
     updateShadow();
