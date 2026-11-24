@@ -850,21 +850,14 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
     background: linear-gradient(180deg, rgba(30, 40, 55, .62), rgba(14, 22, 33, .56)); -webkit-backdrop-filter: blur(30px) saturate(190%); backdrop-filter: blur(30px) saturate(190%);
     border: 1px solid rgba(255, 255, 255, .16); border-radius: 22px; box-shadow: 0 22px 50px rgba(0, 0, 0, .5), 0 2px 10px rgba(0, 0, 0, .25);
     font-size: 16px; letter-spacing: -.2px; color: var(--ink);
-    /* closed: shrunk and blurred into the hamburger button (its centre is 20px in from the popover's right edge, just above its top) */
-    visibility: hidden; opacity: 0; transform: scale(.14, .1); border-radius: 36px; pointer-events: none;
+    /* closed: hidden, and it takes no taps. Opening and closing are animated from script (see the hamburger script below), because
+       mixing a CSS transition with a CSS animation made iPhone browsers jump the menu to a tiny size on close. */
+    visibility: hidden; opacity: 0; pointer-events: none;
     transform-origin: calc(100% - 20px) calc(-1 * (var(--nav-h) / 2 + 6px));
-    transition: opacity .2s ease .2s, transform .4s cubic-bezier(.5, 0, .7, .5), border-radius .4s ease, visibility 0s linear .4s;
   }
-  /* open (like the iOS pop-up menu): the glass comes out of the button already large but soft and blurred, sharpens within a beat,
-     swells a touch past its size and settles. Closing is slower: it blurs, rounds off and drains back into the button. */
-  .nav__links.is-open { visibility: visible; opacity: 1; transform: none; border-radius: 22px; pointer-events: auto; transition-delay: 0s; animation: nav-pop .5s linear; }
-  @keyframes nav-pop {
-    0%   { opacity: 0; transform: scale(.3, .22); border-radius: 34px; animation-timing-function: cubic-bezier(.16, .84, .3, 1); }
-    26%  { opacity: 1; transform: scale(.93, .88); border-radius: 26px; animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
-    52%  { transform: scale(1.035, 1.05); animation-timing-function: cubic-bezier(.4, 0, .3, 1); }
-    76%  { transform: scale(.992, .99); animation-timing-function: cubic-bezier(.4, 0, .3, 1); }
-    100% { opacity: 1; transform: scale(1); border-radius: 22px; }
-  }
+  /* open: fully visible (the script plays the glass-swell on top of this). is-closing keeps it visible while it drains into the button. */
+  .nav__links.is-open, .nav__links.is-closing { visibility: visible; opacity: 1; }
+  .nav__links.is-open { pointer-events: auto; }
   .nav__links::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
     background: radial-gradient(130% 90% at 80% -12%, rgba(255, 255, 255, .2), rgba(255, 255, 255, 0) 55%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 -1px 0 rgba(255, 255, 255, .05); }
   /* the items come in softly, a beat behind the glass: fade up out of a blur */
@@ -1014,7 +1007,8 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) {
   .nav__mark::after, .nav__mark img, .cta::before, .cta::after { animation: none; }
   .cta.reveal { animation: fade .4s ease forwards; }
-  .nav__links, .nav__links.is-open { transform: none; animation: none; transition: opacity .2s ease, visibility 0s linear .2s; }
+  .nav__links { transition: opacity .2s ease, visibility 0s linear .2s; }
+  .nav__links.is-open, .nav__links.is-closing { transition: none; }
   .nav__links.is-open > *, .nav__toggle[aria-expanded="true"] { animation: none; }
   .nav__toggle span { transition: none; }
   .role__rot > span, .role__rot > span.is-on, .role__rot > span.is-off { transform: none; filter: none; transition: opacity .4s ease; }
@@ -2161,10 +2155,37 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
 (() => {
   const btn = document.getElementById('nav-toggle'), menu = document.getElementById('nav-menu');
   if (!btn || !menu) return;
+  // The glass swell, played with the Web Animations API: each run starts from the menu's CURRENT look, so a tap in the middle of
+  // an opening (or closing) turns it round smoothly instead of jumping.
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const look = () => { const c = getComputedStyle(menu); return { transform: c.transform === 'none' ? 'scale(1)' : c.transform, opacity: c.opacity, borderRadius: c.borderTopLeftRadius }; };
+  const OPEN = [
+    { opacity: 0, transform: 'scale(.3, .22)', borderRadius: '34px', easing: 'cubic-bezier(.16, .84, .3, 1)', offset: 0 },
+    { opacity: 1, transform: 'scale(.93, .88)', borderRadius: '26px', easing: 'cubic-bezier(.2, .7, .3, 1)', offset: .26 },
+    { transform: 'scale(1.035, 1.05)', easing: 'cubic-bezier(.4, 0, .3, 1)', offset: .52 },
+    { transform: 'scale(.992, .99)', easing: 'cubic-bezier(.4, 0, .3, 1)', offset: .76 },
+    { opacity: 1, transform: 'scale(1)', borderRadius: '22px', offset: 1 },
+  ];
+  let run = null;
   const set = (open) => {
+    const was = btn.getAttribute('aria-expanded') === 'true';
     btn.setAttribute('aria-expanded', open);
     btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    menu.classList.toggle('is-open', open);
+    if (reduce.matches) { menu.classList.toggle('is-open', open); return; }
+    const from = run ? look() : null;                     // where the menu is right now, if it is mid-animation
+    if (run) { run.onfinish = null; run.cancel(); run = null; }
+    if (open === was && !from) return;
+    if (open) {
+      menu.classList.remove('is-closing'); menu.classList.add('is-open');
+      const k = OPEN.map((f) => ({ ...f })); if (from) { k[0] = { ...k[0], transform: from.transform, opacity: from.opacity, borderRadius: from.borderRadius }; }
+      run = menu.animate(k, { duration: from ? 420 : 500, easing: 'linear' });
+    } else {
+      menu.classList.remove('is-open'); menu.classList.add('is-closing');
+      const start = from || { transform: 'scale(1)', opacity: '1', borderRadius: '22px' };
+      run = menu.animate([start, { transform: 'scale(.14, .1)', opacity: 0, borderRadius: '36px', offset: 1 }], { duration: 400, easing: 'cubic-bezier(.5, 0, .7, .5)' });
+      const mine = run; mine.onfinish = () => { if (run === mine) { run = null; menu.classList.remove('is-closing'); } };
+    }
+    if (run && open) { const mine = run; mine.onfinish = () => { if (run === mine) run = null; }; }
   };
   let lastToggle = 0;
   btn.addEventListener('click', (e) => { const now = performance.now(); if (now - lastToggle < 400) { e.preventDefault(); return; } lastToggle = now; set(btn.getAttribute('aria-expanded') !== 'true'); });

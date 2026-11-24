@@ -46,7 +46,7 @@ const out = await build({
   bundle: true, minify: true, format: 'iife', write: false, target: 'es2020',
   alias: { 'three/addons': NM + '/three/examples/jsm' },
 });
-const glb = rd('assets/hero-v3/ninja-loop.glb').toString('base64');
+const glb = rd('assets/hero-v3/ninja-loop3.glb').toString('base64');
 const tex = JSON.stringify({ base: b64(rd('assets/hero-v3/tex-red.webp'),'image/webp'), normal: b64(rd('assets/hero-v3/tex-normal.webp'),'image/webp'), mr: b64(rd('assets/hero-v3/tex-mr.webp'),'image/webp') });
 const lglb = rd('assets/loader-v3/ninja-loader.glb').toString('base64');
 const ltex = JSON.stringify({ base: b64(rd('assets/loader-v3/tex-red.webp'),'image/webp'), normal: b64(rd('assets/loader-v3/tex-normal.webp'),'image/webp'), mr: b64(rd('assets/loader-v3/tex-mr.webp'),'image/webp') });
