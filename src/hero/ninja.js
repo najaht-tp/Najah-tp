@@ -50,11 +50,11 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
     if (!framing) return;
     const { size, mid } = framing;
     const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const par = canvas.parentElement, ext = par && par.clientHeight ? Math.max(0, canvas.clientHeight / par.clientHeight - 1) : 0;
     const distV = (size.y / 2) / t;
-    const distH = (size.x / 2) / (t * camera.aspect);   // keep the full arm span in view on narrow canvases
+    const distH = (size.x / 2) / (t * camera.aspect * (1 + ext));   // judge the width against his own box, not the taller canvas
     const dist0 = Math.max(distV, distH) + size.z / 2;
     // when the canvas reaches up above his box (phones), keep him the same size and place and just show more room above him
-    const par = canvas.parentElement, ext = par && par.clientHeight ? Math.max(0, canvas.clientHeight / par.clientHeight - 1) : 0;
     const dist = dist0 * (1 + ext), up = ext * dist0 * t;
     fallExtra = ext * 2 * dist0 * t + size.y * 0.15;          // how much higher the dive starts, so he still drops in from out of the frame
     if (!ext) fallExtra = 0;
@@ -204,7 +204,7 @@ export async function initHeroNinja({ progress, gate = Promise.resolve() }) {
       }
     }
   };
-  if (location.hash === '#debug') window.__ninjaDebug = { step, model, mixer, clapAct, danceAct, get phase() { return phase; } };
+  if (location.hash === '#debug') window.__ninjaDebug = { step, model, mixer, clapAct, danceAct, get framing() { return framing; }, camera, get phase() { return phase; } };
 
   // One-off GPU work (texture upload, shader compile) in idle slices, so it never stalls the loader's animation
   for (const t of Object.values(textures)) { await idle(); renderer.initTexture(t); }
