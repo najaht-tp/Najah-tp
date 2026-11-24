@@ -5,7 +5,7 @@
 
 export const ASSETS = {
   // the rigged chibi ninja (same model and textures as the hero and the loader), with the game's animation clips
-  ninja: { url: 'assets/game/ninja-game.glb', embedded: () => window.__GAME_GLB__ },
+  ninja: { url: 'assets/game/ninja-chibi.glb', embedded: () => window.__GAME_GLB__ },
   // the ninja's colour / normal / metal-rough maps (shared with the loader ninja)
   ninjaTextures: {
     urls: { base: 'assets/hero-v3/tex-base.webp', normal: 'assets/hero-v3/tex-normal.webp', mr: 'assets/hero-v3/tex-mr.webp' },

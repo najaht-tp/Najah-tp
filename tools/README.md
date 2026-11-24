@@ -47,7 +47,7 @@ Build: `npm run build` (tools/build.mjs resolves its paths from the project root
     src/game/level.js    the level layout (ground, gaps, platforms, obstacles, coins, scrolls, checkpoint, goal)
     src/game/world.js    sky, mountains, bamboo, lanterns, petals
     src/game/fx.js, audio.js, ui.js
-    assets/game/ninja-game.glb  the Meshy ninja rig with 5 clips (Running, Alert, jump, combo, Agree), hips travel locked
+    assets/game/ninja-chibi.glb  the chibi ninja rig with 5 clips (Running, Alert, jump, combo, Agree), hips travel locked
     assets/game/katana.glb      Ninja-2.0/Katana.glb, simplified to ~5k triangles, 512px WebP textures
 
 Rebuild the two GLBs with gltf-transform (core, functions, extensions) + meshoptimizer + sharp:
