@@ -5,6 +5,7 @@
 // can be cut to the windows the game needs. Root motion is removed every frame: the hips stay over the feet, and
 // in the air the clip's own jump height is cancelled because physics already lifts the character.
 import * as THREE from 'three';
+import { createGripMorph } from '../loader/grip-morph.js';
 import { CLIPS, CLIP_WINDOWS as W, CHARACTER as C, TUNING as T } from './config.js';
 
 const DEG = Math.PI / 180;
@@ -29,8 +30,12 @@ export function createPlayer(scene, assets) {
     material = m;
   });
 
+  // the chibi hand is a solid block: curl its four fingers round the handle (a morph target, built once from the mesh)
+  let skinned = null; model.traverse((o) => { if (o.isSkinnedMesh) skinned = o; });
   const bones = {}; const allBones = [];
   model.traverse((o) => { if (o.isBone) { allBones.push(o); for (const [k, re] of Object.entries(C.bones)) if (!bones[k] && re.test(o.name)) bones[k] = o; } });
+
+  if (skinned && bones.hand) { const gm = createGripMorph(skinned, bones.hand); gm.build({ y0: 0.12, length: 0.1, angle: 3.3, fold: new THREE.Vector3(-1, 0, 0) }); gm.influence = 1; }
 
   // ── clips ──
   const mixer = new THREE.AnimationMixer(model);

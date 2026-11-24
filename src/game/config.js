@@ -4,12 +4,12 @@
 // base64 globals instead (window.__GAME_GLB__, window.__KATANA_GLB__, window.__LOADER_TEX__), so nothing is fetched.
 
 export const ASSETS = {
-  // the rigged ninja (same rig, mesh and textures as the loader ninja), with the game's animation clips
+  // the rigged chibi ninja (same model and textures as the hero and the loader), with the game's animation clips
   ninja: { url: 'assets/game/ninja-game.glb', embedded: () => window.__GAME_GLB__ },
   // the ninja's colour / normal / metal-rough maps (shared with the loader ninja)
   ninjaTextures: {
-    urls: { base: 'assets/loader/tex-base.webp', normal: 'assets/loader/tex-normal.webp', mr: 'assets/loader/tex-mr.webp' },
-    embedded: () => window.__LOADER_TEX__,
+    urls: { base: 'assets/hero-v3/tex-base.webp', normal: 'assets/hero-v3/tex-normal.webp', mr: 'assets/hero-v3/tex-mr.webp' },
+    embedded: () => window.__NINJA_TEX__,
   },
   // the painted backdrop behind the level (sky, sun, mountains, temples)
   background: { url: 'assets/game/background.webp', embedded: () => window.__GAME_BG__,
@@ -44,11 +44,11 @@ export const CHARACTER = {
   katana: {
     handleCentre: 0.64,        // along the model's X axis (the blade points to -X in the GLB)
     modelLength: 1.9,          // tip to pommel in GLB units
-    lengthOfHeight: 0.57,      // sword length as a fraction of the grip reference height
+    lengthOfHeight: 0.42,      // sword length as a fraction of the grip reference height
     // grip relative to the hand bone (same calibration as the loader katana): offset in the bone's axes
     // (fractions of the reference height) and orientation
-    gripPos: [-0.002, 0.079, -0.008],
-    gripEuler: [40, 0, 90],    // degrees
+    gripPos: [-0.045, 0.085, 0],
+    gripEuler: [60, 0, 90],    // degrees
   },
 };
 
