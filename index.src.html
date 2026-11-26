@@ -580,6 +580,34 @@ html.is-case .case__bar { opacity: 1; }
 .vi-lede { margin: clamp(20px, 2.4vw, 32px) 0 0; max-width: 62ch; font-size: clamp(17px, 1.7vw, 24px); line-height: 1.55; letter-spacing: -.1px; color: #d8dde1; }
 .vi-actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: clamp(28px, 3vw, 40px); }
 .vi-actions .btn { height: 48px; padding: 0 30px; font-size: 15px; }
+/* Small phones (the button would sit below the first screen): the button stays where the design puts it until the page is scrolled. From the first scroll on,
+   "Explore my work" floats at the bottom of the screen on a liquid-glass bar, and the content scrolls under it. The script below adds html.cta-sticky only on screens
+   where the button would not be visible, html.cta-pinned while the page is scrolled, and builds the floating copy (.cta-float). */
+.cta-slot { display: contents; }
+.cta-float { display: none; }
+@media (max-width: 900px) {
+  .cta-slot { display: flex; justify-content: center; order: 2; position: relative; z-index: 3; margin-top: 24px; }
+  .cta-slot .cta { margin-top: 0; }
+  html.cta-sticky .cta-float {
+    display: flex; justify-content: center; position: fixed; left: 0; right: 0; bottom: 0; z-index: 4;
+    padding: 28px var(--side) calc(14px + env(safe-area-inset-bottom, 0px));
+    opacity: calc(var(--cta-p, 0) * var(--cta-q, 1)); transform: translateY(calc((1 - var(--cta-p, 0)) * 26px)); pointer-events: none; will-change: opacity, transform;
+  }
+  html.cta-sticky .cta-float::before {   /* the liquid glass: blurred, tinted, fading out upward so the content flows under it */
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: linear-gradient(to top, rgba(8, 12, 19, .78), rgba(8, 12, 19, .5) 62%, rgba(8, 12, 19, 0));
+    -webkit-backdrop-filter: blur(16px) saturate(1.5); backdrop-filter: blur(16px) saturate(1.5);
+    -webkit-mask-image: linear-gradient(to top, #000 58%, transparent); mask-image: linear-gradient(to top, #000 58%, transparent);
+  }
+  html.cta-sticky .cta-float .cta { position: relative; z-index: 1; margin-top: 0; opacity: 1; animation: none; transform: none; }
+  html.cta-sticky.cta-pinned .cta-float { pointer-events: auto; }
+  /* as the page is scrolled the real button's place closes up in step with the scroll (no jump), so the lines below move up into it and the spacing stays even;
+     the floating copy rises in over the same stretch. --cta-p runs 0 -> 1 (eased) over the first ~110px of scrolling, --cta-q fades the float out at the end of the hero */
+  html.cta-sticky .cta-slot { margin-top: calc(24px * (1 - var(--cta-p, 0))); height: calc(48px * (1 - var(--cta-p, 0))); }
+  html.cta-sticky .cta-slot .cta { opacity: calc(1 - var(--cta-p, 0) * 1.7); }
+  html.cta-sticky.cta-moved .cta-slot .cta { visibility: hidden; }
+  html.cta-sticky .stage { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }   /* the last line clears the floating button */
+}
 .btn--secondary { background: rgba(214, 214, 214, .08); color: #d6d6d6; border: 1px solid rgba(214, 214, 214, .22); font-weight: 500;
   transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .16s var(--ease-out); }
 @media (hover: hover) and (pointer: fine) { .btn--secondary:hover { background: rgba(214, 214, 214, .16); border-color: rgba(214, 214, 214, .4); color: #fff; } }
@@ -1088,7 +1116,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
       <p class="eyebrow reveal" style="--i:0">Product designer, 5+ years, based in India</p>
       <h1 class="name reveal" style="--i:1" aria-label="Najah"><span class="ch" aria-hidden="true"><span>N</span></span><span class="ch" aria-hidden="true"><span>a</span></span><span class="ch" aria-hidden="true"><span>j</span></span><span class="ch" aria-hidden="true"><span>a</span></span><span class="ch" aria-hidden="true"><span>h</span></span></h1>
       <p class="lede reveal" style="--i:2">I design digital experiences that make<br>complex things feel clear and human.</p>
-      <a class="btn cta reveal" style="--i:3" href="#work">Explore my work <span aria-hidden="true">↗</span></a>
+      <div class="cta-slot"><a class="btn cta reveal" style="--i:3" href="#work">Explore my work <span aria-hidden="true">↗</span></a></div>
     </div>
 
     <!-- award seal (links to the award page through .award-hit below): sits outside the ninja layer so dragging the ninja never moves it. The ring of words turns slowly;
@@ -2646,5 +2674,43 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
 </script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","gsap":"https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js"}}</script>
 <script type="module" src="src/main.js?v=game8"></script>
+<script>
+/* "Explore my work" on small phones: where it would sit below the first screen, it floats at the bottom (on glass) while the page is scrolled */
+(() => {
+  const root = document.documentElement, btn = document.querySelector('.copy--left a.cta'), hero = document.getElementById('hero');
+  if (!btn || !hero) return;
+  const bar = document.createElement('div'); bar.className = 'cta-float'; bar.setAttribute('aria-hidden', 'true');
+  const copy = btn.cloneNode(true); copy.classList.remove('reveal'); copy.removeAttribute('style'); copy.tabIndex = -1;
+  copy.addEventListener('click', (e) => { e.preventDefault(); btn.click(); });   // the floating copy does exactly what the real button does
+  bar.appendChild(copy); document.body.appendChild(bar);
+  let lastW = 0, lastH = 0, ticking = false;
+  const check = () => {
+    const w = innerWidth, h = innerHeight;
+    if (lastW && Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 120) return;   // ignore the browser bar growing/shrinking while scrolling
+    lastW = w; lastH = h;
+    root.classList.remove('cta-sticky');
+    if (w <= 900) { const bottom = btn.getBoundingClientRect().bottom + scrollY; if (bottom + 40 > h) root.classList.add('cta-sticky'); }
+    update();
+  };
+  const ease = (t) => t * t * (3 - 2 * t);   // smoothstep: eases in, eases out
+  const update = () => {
+    ticking = false;
+    const sticky = root.classList.contains('cta-sticky');
+    let p = 0, q = 1;
+    if (sticky) {
+      p = ease(Math.max(0, Math.min(1, scrollY / 110)));
+      const hb = hero.getBoundingClientRect().bottom, lim = innerHeight * 0.55;
+      q = Math.max(0, Math.min(1, (hb - lim) / 90));   // the float fades out as the hero ends
+    }
+    root.style.setProperty('--cta-p', p.toFixed(4)); root.style.setProperty('--cta-q', q.toFixed(4));
+    root.classList.toggle('cta-moved', p > 0.62);
+    root.classList.toggle('cta-pinned', p > 0.5 && q > 0.3);
+  };
+  addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  addEventListener('resize', check); addEventListener('orientationchange', () => { lastW = 0; setTimeout(check, 250); });
+  addEventListener('load', () => { lastW = 0; check(); setTimeout(() => { lastW = 0; check(); }, 1500); });
+  check();
+})();
+</script>
 </body>
 </html>
