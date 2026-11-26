@@ -1,18 +1,18 @@
 // Ninja tools that drift through the hero, one at a time, now and then: a shuriken, a kunai, a smoke bomb, a scroll, a grappling hook and a pouch.
 // Each takes its own path (left to right, right to left, top to bottom, bottom to top, or a slow circle round the ninja), bobbing and turning gently.
 // Touch one with the pointer (or tap it) and it is kicked away in the direction of the hit: it spins off, a small red burst marks the spot, and it flies out
-// of the hero. Pictures only on one transparent canvas that lives inside the hero (so it scrolls with it and clips at its edges); never blocks a click.
+// of the screen, over the top bar and everything else. One transparent full-screen canvas above the page; a floating tool is clipped to the hero until it is hit; never blocks a click.
 export function initFloaters({ gate } = {}) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const hero = document.getElementById('hero'), root = document.documentElement;
   if (!hero) return;
   const cv = document.createElement('canvas');
   cv.setAttribute('aria-hidden', 'true');
-  cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:7;pointer-events:none';
-  hero.appendChild(cv);
+  cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:3400;pointer-events:none';   // above the top bar, below the cursor trail
+  document.body.appendChild(cv);
   const ctx = cv.getContext('2d');
-  let W = 0, H = 0, dpr = 1;
-  const size = () => { const r = hero.getBoundingClientRect(); dpr = Math.min(devicePixelRatio || 1, 2); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  let W = 0, H = 0, CW = 0, CH = 0, dpr = 1;                // W, H: the hero (where tools float); CW, CH: the whole screen (where a kicked tool can fly)
+  const size = () => { const r = hero.getBoundingClientRect(); dpr = Math.min(devicePixelRatio || 1, 2); W = r.width; H = r.height; CW = innerWidth; CH = innerHeight; cv.width = Math.round(CW * dpr); cv.height = Math.round(CH * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
   size(); addEventListener('resize', size);
   if (window.ResizeObserver) new ResizeObserver(size).observe(hero);
 
@@ -50,7 +50,7 @@ export function initFloaters({ gate } = {}) {
 
   // ---- the pointer: touching an item kicks it ----
   let px = -1, py = -1, pvx = 0, pvy = 0, pt = 0;
-  const local = (e) => { const r = hero.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const local = (e) => [e.clientX, e.clientY];
   const touch = (x, y, vx, vy, force) => {
     for (const it of items) {
       if (it.hit || it.age < 350) continue;
@@ -77,21 +77,25 @@ export function initFloaters({ gate } = {}) {
   function frame(now) {
     raf = 0;
     const dt = Math.min(48, now - lastT); lastT = now;
-    const show = visible();
+    const show = visible(), hr = hero.getBoundingClientRect(); W = hr.width; H = hr.height;
     if (show && ok && now >= nextSpawn && items.length < 2) { spawn(now); nextSpawn = now + rnd(5200, 8200); }
-    ctx.clearRect(0, 0, W, H);
+    ctx.clearRect(0, 0, CW, CH);
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i]; it.age = now - it.born;
       if (it.hit) { it.x += it.vx * dt; it.y += it.vy * dt; it.vx *= Math.pow(0.9992, dt); it.vy *= Math.pow(0.9992, dt); it.rot += it.spin * dt; }
-      else { const [x, y] = it.path(it.age); it.x = x; it.y = y; it.rot += it.spin * dt; }
+      else { const [x, y] = it.path(it.age); it.x = hr.left + x; it.y = hr.top + y; it.rot += it.spin * dt; }   // floating: it moves with the hero
       const m = it.s * 1.5;
-      if (it.x < -m || it.x > W + m || it.y < -m || it.y > H + m) { if (it.hit || it.age > 1500) { items.splice(i, 1); continue; } }
+      const gone = it.hit ? (it.x < -m || it.x > CW + m || it.y < -m || it.y > CH + m) : (it.age > 1500 && (it.x < hr.left - m || it.x > hr.right + m || it.y < hr.top - m || it.y > hr.bottom + m));
+      if (gone) { items.splice(i, 1); continue; }
+      if (!show) continue;
       // proximity cue: it perks up a little when the pointer is near
       const near = px >= 0 && !it.hit ? Math.max(0, 1 - Math.hypot(px - it.x, py - it.y) / (it.s * 2.2)) : 0;
       it.hover += (near - it.hover) * Math.min(1, dt / 120);
       const fadeIn = ease(Math.min(1, it.age / 700)), sc = (0.7 + 0.3 * fadeIn) * (1 + 0.1 * it.hover) * (it.hit ? 1 + Math.min(0.15, (now - it.hitAt) / 1500) : 1);
       const bob = it.hit ? 0 : Math.sin(it.age * 0.0021 + it.kind) * 2.5;
-      ctx.save(); ctx.globalAlpha = fadeIn; ctx.translate(it.x, it.y + bob); ctx.rotate(it.rot + (it.hit ? 0 : Math.sin(it.age * 0.0013 + it.kind) * 0.12));
+      ctx.save();
+      if (!it.hit) { ctx.beginPath(); ctx.rect(hr.left, hr.top, hr.width, hr.height); ctx.clip(); }   // until it is hit it stays inside the hero; after the kick it can cross the whole screen
+      ctx.globalAlpha = fadeIn; ctx.translate(it.x, it.y + bob); ctx.rotate(it.rot + (it.hit ? 0 : Math.sin(it.age * 0.0013 + it.kind) * 0.12));
       ctx.shadowColor = `rgba(255, 50, 80, ${0.28 + 0.4 * it.hover})`; ctx.shadowBlur = 12 + 10 * it.hover;
       const s = it.s * sc; ctx.drawImage(sheet, it.kind * CELL, 0, CELL, CELL, -s / 2, -s / 2, s, s);
       ctx.restore();
@@ -99,6 +103,7 @@ export function initFloaters({ gate } = {}) {
     // the hit marks: a thin red ring and a few sparks along the direction of the kick
     for (let i = bursts.length - 1; i >= 0; i--) {
       const b = bursts[i], k = (now - b.born) / 520; if (k >= 1) { bursts.splice(i, 1); continue; }
+      if (!show) continue;
       const e = 1 - Math.pow(1 - k, 3);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(255,60,90,${(0.8 * (1 - k)).toFixed(3)})`; ctx.lineWidth = 2 * (1 - k) + 0.4;
       ctx.beginPath(); ctx.arc(b.x, b.y, 8 + 34 * e, 0, 6.283); ctx.stroke();
