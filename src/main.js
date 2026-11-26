@@ -2,6 +2,7 @@
 import { Progress } from './loader/progress.js';
 import { createLoader } from './loader/loader.js';
 import { initHeroNinja } from './hero/ninja.js';
+import { initCursorTrail } from './hero/cursor-trail.js';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches || location.hash.includes('loadersimple');   // the hash is a dev/test switch for the simple path
 // The loader only waits for what the first screen truly needs. The hero's 3D ninja is NOT one of them: a still picture of it
@@ -34,6 +35,7 @@ let openGate; const gate = new Promise((r) => { openGate = r; });
 const open = () => { document.documentElement.classList.remove('is-loading'); openGate(); };
 
 initHeroNinja({ progress, gate });
+initCursorTrail();
 createLoader({ progress, reduce, onReveal: open }).then((loader) => {
   // coming back from the back/forward cache: never replay the loader
   addEventListener('pageshow', (e) => { if (e.persisted) { loader?.skip(); open(); } });
