@@ -1679,7 +1679,7 @@ html.is-case .nav__hello:active { transform: scale(.97); }
       </form>
       <a class="lock__request" href="mailto:najahuiux@gmail.com?subject=Access%20request%3A%20Sony%20LIV&amp;body=Hi%20Najah%2C%0A%0ACould%20I%20have%20access%20to%20the%20Sony%20LIV%20case%20study%3F%0A%0A">Request access <span aria-hidden="true">↗</span></a>
     </div>
-    <script type="application/json" data-lock-payload data-src="locked/sony-live.ce28c9a868.json"></script>
+    <script type="application/json" data-lock-payload data-src="locked/sony-live.c5c0cc7795.json"></script>
   </article>
   <article class="case__in" id="case-generic">
     <header>
@@ -2150,7 +2150,7 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
 // switch is ON (the switch click is what lets the browser start audio).
 (() => {
   const S = window.najahSound || (window.najahSound = { on: false });
-  const TARGETS = '.btn, .nav__links a, .nav__toggle';
+  const TARGETS = '.btn, .nav__links a, .nav__toggle, .nav__hello';
   const cache = new Map();
   let playing = null, timer = 0, current = null;
 
@@ -2188,7 +2188,7 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
     const href = el.getAttribute('href') || '';
     if (el.matches('[data-cv]')) return 'view-cv';
     if (el.matches('[data-play-game]')) return 'play-game';
-    if (href.startsWith('mailto:')) return el.classList.contains('btn') ? 'connect' : 'email';
+    if (href.startsWith('mailto:')) return (el.classList.contains('btn') || el.matches('.nav__connect, .nav__hello')) ? 'connect' : 'email';
     return null;
   };
 

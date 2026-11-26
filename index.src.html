@@ -2318,7 +2318,7 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
 // switch is ON (the switch click is what lets the browser start audio).
 (() => {
   const S = window.najahSound || (window.najahSound = { on: false });
-  const TARGETS = '.btn, .nav__links a, .nav__toggle';
+  const TARGETS = '.btn, .nav__links a, .nav__toggle, .nav__hello';
   const cache = new Map();
   let playing = null, timer = 0, current = null;
 
@@ -2356,7 +2356,7 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
     const href = el.getAttribute('href') || '';
     if (el.matches('[data-cv]')) return 'view-cv';
     if (el.matches('[data-play-game]')) return 'play-game';
-    if (href.startsWith('mailto:')) return el.classList.contains('btn') ? 'connect' : 'email';
+    if (href.startsWith('mailto:')) return (el.classList.contains('btn') || el.matches('.nav__connect, .nav__hello')) ? 'connect' : 'email';
     return null;
   };
 
