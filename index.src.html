@@ -116,6 +116,17 @@ a { color: inherit; }
 @media (hover: hover) and (pointer: fine) and (min-width: 901px) {
   .nav__links a:not(.btn):hover { background: rgba(214, 214, 214, .16); border-color: rgba(214, 214, 214, .4); color: #fff; }
 }
+/* order: on desktop View CV, Connect me, a divider, then Play game; in the hamburger menu Connect me, View CV, Play game (the markup order) */
+@media (min-width: 901px) {
+  .nav__links a[data-cv] { order: 1; } .nav__links a.btn { order: 2; } .nav__links a.nav__play { order: 3; position: relative; margin-left: 22px; }
+  .nav__links a.nav__play::before { content: ""; position: absolute; left: -16px; top: 9px; bottom: 9px; width: 1px; background: rgba(214, 214, 214, .22); }
+}
+@media (min-width: 901px) and (max-width: 1180px) {   /* narrow desktops and tablets: tighter pills so the row never reaches the logo */
+  .nav__links a:not(.btn) { padding: 0 13px; font-size: 13px; }
+  .nav__links a.btn { padding-left: 16px; padding-right: 16px; font-size: 13px; }
+  .nav__links a.nav__play { margin-left: 14px; }
+  .nav__links a.nav__play::before { left: -10px; }
+}
 .nav__links a:first-child { font-weight: 500; }
 /* "Play game": a crimson-tinted pill that stands apart from the grey secondary links */
 .nav__links a.nav__play { gap: 8px; font-weight: 600; }
@@ -1052,9 +1063,9 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
   </div>
   <a class="nav__hello" href="https://wa.me/919747007974?text=Hi%2C%20I%20would%20like%20to%20connect%20with%20you%21" target="_blank" rel="noopener">Say Hello !</a>
   <nav class="nav__links" id="nav-menu" aria-label="Primary">
-    <a class="nav__play" href="#play" role="button" data-play-game><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg> Play game</a>
-    <a href="https://drive.google.com/file/d/1eFRRkGeXIDDNKXjKBg7PVc8EwtPf9U4F/view?usp=sharing" target="_blank" rel="noopener" data-cv>View CV <span aria-hidden="true">↗</span></a>
     <a class="btn" href="mailto:najahuiux@gmail.com?subject=Project%20Enquiry&amp;body=Hi%20Najah%2C%0A%0A" data-copy="najahuiux@gmail.com">Connect me <span aria-hidden="true">↗</span></a>
+    <a href="https://drive.google.com/file/d/1eFRRkGeXIDDNKXjKBg7PVc8EwtPf9U4F/view?usp=sharing" target="_blank" rel="noopener" data-cv>View CV <span aria-hidden="true">↗</span></a>
+    <a class="nav__play" href="#play" role="button" data-play-game><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg> Play game</a>
     <div class="nav__social" role="group" aria-label="Social profiles"><a class="social__link" href="https://www.linkedin.com/in/najah-tp/" data-social="linkedin" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 9.5v8M6.5 6.4v.1M10.5 17.5v-4.6c0-1.9 1.2-3.1 2.8-3.1s2.7 1.2 2.7 3.1v4.6M10.5 9.5v8"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg></a><a class="social__link" href="https://www.instagram.com/najah.tp/" data-social="instagram" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.3 6.7v.1"/></svg></a><a class="social__link" href="https://www.behance.net/najahtp" data-social="behance" target="_blank" rel="noopener" aria-label="Behance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5h4.6c1.8 0 3 1 3 2.6 0 1.3-.9 2.2-2.1 2.4 1.5.2 2.6 1.2 2.6 2.8 0 1.8-1.3 2.9-3.4 2.9H3V6.5zM3 11.6h4.4"/><path d="M14 13.4h7c0-2.3-1.4-3.9-3.5-3.9S14 11.1 14 13.4c0 2.3 1.5 3.9 3.6 3.9 1.5 0 2.6-.7 3.1-1.8M15 6.8h5"/></svg></a><a class="social__link" href="https://dribbble.com/Najah-UiUx" data-social="dribbble" target="_blank" rel="noopener" aria-label="Dribbble"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.6 3.7c3.4 4.4 5.4 9.5 6.6 16.2M3.1 10.6c5.7.3 11-1.1 15.5-4.9M5.5 18.4c3.4-4.6 8.4-6.4 15.3-4.9"/></svg></a></div>
   </nav>
 </header>
