@@ -55,7 +55,7 @@ const gglb = fs.existsSync(R + '/assets/game/ninja-chibi.glb') ? rd('assets/game
 const kglb = fs.existsSync(R + '/assets/game/katana.glb') ? rd('assets/game/katana.glb').toString('base64') : '';
 const gbg = fs.existsSync(R + '/assets/game/background.webp') ? b64(rd('assets/game/background.webp'), 'image/webp') : '';
 const voice = {}; for (const f of fs.readdirSync(R + '/assets/voice')) if (f.endsWith('.m4a')) voice[f.replace('.m4a','')] = rd('assets/voice/' + f).toString('base64');
-const script = '<script>window.__VOICE__=' + JSON.stringify(voice) + (gglb ? ';window.__GAME_GLB__="' + gglb + '";window.__KATANA_GLB__="' + kglb + '";window.__GAME_BG__="' + gbg + '"' : '') + ';window.__NINJA_GLB__="' + glb + '";window.__NINJA_TEX__=' + tex + ';window.__LOADER_GLB__="' + lglb + '";window.__LOADER_TEX__=' + ltex + ';</script>\n<script>' + out.outputFiles[0].text.replace(/<\/script>/g, '<\\/script>') + '</script>';
+const script = '<script>window.__VOICE__=' + JSON.stringify(voice) + (gglb ? ';window.__GAME_GLB__="' + gglb + '";window.__KATANA_GLB__="' + kglb + '";window.__GAME_BG__="' + gbg + '"' : '') + ';window.__NINJA_GLB__="' + glb + '";window.__TOOLS__="' + b64(rd('assets/hero-v3/tools.webp'), 'image/webp') + '";window.__NINJA_TEX__=' + tex + ';window.__LOADER_GLB__="' + lglb + '";window.__LOADER_TEX__=' + ltex + ';</script>\n<script>' + out.outputFiles[0].text.replace(/<\/script>/g, '<\\/script>') + '</script>';
 html = html.replace(m[0], () => script);
 // protected case studies: encrypted with the password in .secrets/<slug>.txt (see tools/lock.mjs)
 html = lockArticles(html, R, { title: { 'sony-live': 'Sony LIV' }, logo: { 'sony-live': uri['assets/projects/sony-live/thumb5.webp'] } });
