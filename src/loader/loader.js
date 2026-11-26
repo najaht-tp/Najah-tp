@@ -267,7 +267,7 @@ export async function createLoader({ progress, reduce, onReveal }) {
 
   // returning visitors in the same session get a quicker version
   let seen = false; try { seen = sessionStorage.getItem('najah-loader-seen') === '1'; } catch (e) {}
-  tl.timeScale(seen ? 1.6 : 1.2);                                       // a little quicker than natural speed, still smooth: visitors should not wait long (first visit about 6 s, a return about 4.5 s)
+  tl.timeScale(seen ? 1.15 : 0.92);                                       // a little quicker than natural speed, still smooth: visitors should not wait long (a middle pace: smooth and unhurried, but not slow)
 
   if (debug) {
     window.__loader = {
