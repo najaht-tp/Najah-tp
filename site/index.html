@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Najah — Designer</title>
-<link rel="modulepreload" href="js/main-4NXNEA5X.js">
+<link rel="modulepreload" href="js/main-X2FLNLK6.js">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -1680,7 +1680,7 @@ html.is-case-vi .nav__hello:active { transform: scale(.97); }
       </form>
       <a class="lock__request" href="mailto:najahuiux@gmail.com?subject=Access%20request%3A%20Sony%20LIV&amp;body=Hi%20Najah%2C%0A%0ACould%20I%20have%20access%20to%20the%20Sony%20LIV%20case%20study%3F%0A%0A">Request access <span aria-hidden="true">↗</span></a>
     </div>
-    <script type="application/json" data-lock-payload data-src="locked/sony-live.966eaa4772.json"></script>
+    <script type="application/json" data-lock-payload data-src="locked/sony-live.b24d002d87.json"></script>
   </article>
   <article class="case__in" id="case-generic">
     <header>
@@ -2503,7 +2503,7 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
   document.addEventListener('mouseleave', () => { on = false; dot.classList.remove('is-on'); ring.classList.remove('is-on'); });
 })();
 </script>
-<script type="module" src="js/main-4NXNEA5X.js"></script>
+<script type="module" src="js/main-X2FLNLK6.js"></script>
 <script>
 /* "Explore my work" on small phones: where it would sit below the first screen, it floats at the bottom (on glass) while the page is scrolled */
 (() => {
@@ -2518,8 +2518,8 @@ window.najahSound = window.najahSound || { on: false };   // shared by the whoos
     const w = innerWidth, h = innerHeight;
     if (lastW && Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 120) return;   // ignore the browser bar growing/shrinking while scrolling
     lastW = w; lastH = h;
-    root.classList.remove('cta-sticky');
-    if (w <= 900) { const bottom = btn.getBoundingClientRect().bottom + scrollY; if (bottom + 40 > h) root.classList.add('cta-sticky'); }
+    root.classList.remove('cta-sticky');   // (measured on the slot, not the button: the button is still sliding in, a transform, while the intro plays)
+    if (w <= 900) { const bottom = btn.parentElement.getBoundingClientRect().bottom + scrollY; if (bottom + 40 > h) root.classList.add('cta-sticky'); }
     update();
   };
   const ease = (t) => t * t * (3 - 2 * t);   // smoothstep: eases in, eases out
